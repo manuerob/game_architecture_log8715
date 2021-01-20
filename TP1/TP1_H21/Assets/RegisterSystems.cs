@@ -8,6 +8,7 @@ public class RegisterSystems
         List<ISystem> toRegister = new List<ISystem>();
 
         // AJOUTEZ VOS SYSTEMS ICI
+        toRegister.Add(new InitializationSystem());
 
         return toRegister;
     }
