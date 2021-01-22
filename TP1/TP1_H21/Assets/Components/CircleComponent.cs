@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Config;
 
-public class CircleComponent : EntityComponent
+public class CircleComponent : IComponent
 {
     ShapeConfig shapeConfig;
     public ShapeConfig ShapeConfig => shapeConfig;
-    public CircleComponent(uint _id, ShapeConfig _shapeConfig)
+    public CircleComponent(ShapeConfig _shapeConfig)
     {
-        id = _id;
         shapeConfig = _shapeConfig;
     }
 }

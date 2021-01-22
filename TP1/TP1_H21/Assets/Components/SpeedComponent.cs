@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpeedComponent : EntityComponent
+public class SpeedComponent : IComponent
 {
     public Vector2 Speed;
-    public SpeedComponent(uint _id, Vector2 _speed)
+    public SpeedComponent(Vector2 _speed)
     {
-        id = _id;
         Speed = _speed;
     }
 }
