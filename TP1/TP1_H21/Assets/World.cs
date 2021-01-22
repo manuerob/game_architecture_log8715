@@ -4,41 +4,33 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-/// <summary>
-/// À rendre plus meilleur!
-/// 
-/// (Polymorphisme pour les listes? Listes de listes?)
-/// 
-/// 
-/// Dict<Type(:ICompoennt), Dict<(id),Icomponent>>
-/// 
-/// GetList<ICompoient> -> Dict<(id),Icomponent>>
-/// </summary>
 public class World
 {
     public bool isStarting = true;
 
-    private Dictionary<Type, List<IComponent>> components = new Dictionary<Type, List<IComponent>>();
+    private Dictionary<Type, Dictionary<EntityComponent, IComponent>> components = new Dictionary<Type, Dictionary<EntityComponent, IComponent>>();
 
-    public void RegisterComponentsDict<ComponentType>(List<ComponentType> newComponentDict) where ComponentType : IComponent
+    public void RegisterComponentsDict<ComponentType>(Dictionary<EntityComponent, ComponentType> newComponentDict) where ComponentType : IComponent
     {
-        components.Add(typeof(ComponentType), newComponentDict.Cast<IComponent>().ToList());
+        components.Add(typeof(ComponentType), newComponentDict.ToDictionary(entry => entry.Key,
+                                                                            entry => (IComponent)entry.Value));
     }
 
-    public List<IComponent> GetComponentsList<ComponentType>() where ComponentType : IComponent
-    {  
-        return components[typeof(ComponentType)];
+    public Dictionary<EntityComponent, ComponentType> GetComponentsDict<ComponentType>() where ComponentType : IComponent
+    {
+        return components[typeof(ComponentType)].ToDictionary(entry => entry.Key,
+                                                              entry => (ComponentType)entry.Value);
     }
 
-    public void AddComponent<ComponentType>(ComponentType newComponent) where ComponentType : IComponent
+    public void AddComponent<ComponentType>(EntityComponent entity, ComponentType newComponent) where ComponentType : IComponent
     {
         if (!components.ContainsKey(typeof(ComponentType)))
-            RegisterComponentsDict(new List<ComponentType>());
-        GetComponentsList<ComponentType>().Add(newComponent);
+            RegisterComponentsDict(new Dictionary<EntityComponent, ComponentType>());
+        components[typeof(ComponentType)].Add(entity, newComponent);
     }
-    public ComponentType GetComponent<ComponentType>(int index) where ComponentType : IComponent
+    public ComponentType GetComponent<ComponentType>(EntityComponent index) where ComponentType : IComponent
     { 
-        return (ComponentType)GetComponentsList<ComponentType>()[index];
+        return GetComponentsDict<ComponentType>()[index];
     }
 
     #region Singleton

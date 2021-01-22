@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Config;
 
+/// <summary>
+/// Mettre le 1/4 static avec la couleur
+/// </summary>
 public class InitializationSystem : ISystem
 {
     public string Name => "InitializationSystem";
@@ -12,15 +15,20 @@ public class InitializationSystem : ISystem
         for (int i = 0, length = ECSManager.Instance.Config.allShapesToSpawn.Count; i < length; i++)
         {
             // Create entities and components
-            World.Instance.AddComponent(new CircleComponent((uint)i, ECSManager.Instance.Config.allShapesToSpawn[i]));
-            World.Instance.AddComponent(new PositionComponent((uint)i, ECSManager.Instance.Config.allShapesToSpawn[i].initialPos));
-            World.Instance.AddComponent(new SpeedComponent((uint)i, ECSManager.Instance.Config.allShapesToSpawn[i].initialSpeed));
+            EntityComponent entity = new EntityComponent{ id = (uint)i };
+            CircleComponent circleComponent = new CircleComponent{ shapeConfig = ECSManager.Instance.Config.allShapesToSpawn[i] };
+            PositionComponent positionComponent = new PositionComponent{ Position = ECSManager.Instance.Config.allShapesToSpawn[i].initialPos };
+            SpeedComponent speedComponent = new SpeedComponent{ Speed = ECSManager.Instance.Config.allShapesToSpawn[i].initialSpeed };
+
+            World.Instance.AddComponent(entity, circleComponent);
+            World.Instance.AddComponent(entity, positionComponent);
+            World.Instance.AddComponent(entity, speedComponent);
         }
 
-        foreach (CircleComponent circle in World.Instance.GetComponentsList<CircleComponent>())
+        foreach (KeyValuePair<EntityComponent, CircleComponent> circle in World.Instance.GetComponentsDict<CircleComponent>())
         {
             // Instantiate Circles
-            ECSManager.Instance.CreateShape(circle.id, circle.ShapeConfig);
+            ECSManager.Instance.CreateShape(circle.Key.id, circle.Value.shapeConfig);
         }
     }
 
