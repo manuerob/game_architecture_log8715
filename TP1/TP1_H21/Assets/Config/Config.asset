@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44f6298b63162af49b161af8f69d4513, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
-  minSize: 1
+  minSize: 1.1
   allShapesToSpawn:
   - initialPos: {x: -5, y: 0}
     size: 3
-    initialSpeed: {x: 0, y: 0}
-  - initialPos: {x: 2, y: 2}
+    initialSpeed: {x: 1, y: 0}
+  - initialPos: {x: 5, y: 0}
     size: 2
-    initialSpeed: {x: 3, y: 1}
+    initialSpeed: {x: 0, y: 0}
   _systemsEnabled:
     keys:
     - InitializationSystem

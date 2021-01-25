@@ -22,6 +22,12 @@ public class World
                                                               entry => (ComponentType)entry.Value);
     }
 
+    public void RemoveComponent<ComponentType>(EntityComponent entity) where ComponentType : IComponent
+    {
+        if (components.ContainsKey(typeof(ComponentType)))
+            components[typeof(ComponentType)].Remove(entity);
+    }
+
     public void AddComponent<ComponentType>(EntityComponent entity, ComponentType newComponent) where ComponentType : IComponent
     {
         if (!components.ContainsKey(typeof(ComponentType)))
@@ -29,7 +35,7 @@ public class World
         components[typeof(ComponentType)].Add(entity, newComponent);
     }
     public ComponentType GetComponent<ComponentType>(EntityComponent index) where ComponentType : IComponent
-    { 
+    {
         return GetComponentsDict<ComponentType>()[index];
     }
 

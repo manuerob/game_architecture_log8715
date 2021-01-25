@@ -13,30 +13,45 @@ public class CollisionSystem : ISystem
             SizeComponent size = World.Instance.GetComponent<SizeComponent>(speed.Key);
             PositionComponent position = World.Instance.GetComponent<PositionComponent>(speed.Key);
 
-            foreach (KeyValuePair<EntityComponent, SizeComponent> size2 in World.Instance.GetComponentsDict<SizeComponent>())
+            if (World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(speed.Key))
             {
-                if(speed.Key.id != size2.Key.id)
+                foreach (KeyValuePair<EntityComponent, SizeComponent> size2 in World.Instance.GetComponentsDict<SizeComponent>())
                 {
-                    PositionComponent position2 = World.Instance.GetComponent<PositionComponent>(size2.Key);
-
-                    if ((position2.Position - position.Position).magnitude < (size.Size + size2.Value.Size)/2)
+                    if (speed.Key.id != size2.Key.id && World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(size2.Key))
                     {
-                        size.Size /= 2;
-                        speed.Value.Speed *= -1;
-                        ECSManager.Instance.UpdateShapeSize(speed.Key.id, size.Size);
+                        PositionComponent position2 = World.Instance.GetComponent<PositionComponent>(size2.Key);
 
-                        SpeedComponent speed2 = World.Instance.GetComponent<SpeedComponent>(size2.Key);
-
-                        if (speed2 != null)
+                        if ((position2.Position - position.Position).magnitude < (size.Size + size2.Value.Size) / 2)
                         {
-                            size2.Value.Size /= 2;
-                            speed2.Speed *= -1;
-                            ECSManager.Instance.UpdateShapeSize(size2.Key.id, size2.Value.Size);
+                            size.Size /= 2;
+                            speed.Value.Speed *= -1;
+                            ECSManager.Instance.UpdateShapeSize(speed.Key.id, size.Size);
+
+                            TurnIntoGhost(size.Size, speed.Key);
+
+                            if (World.Instance.GetComponentsDict<SpeedComponent>().ContainsKey(size2.Key))
+                            {
+                                size2.Value.Size /= 2;
+                                SpeedComponent speed2 = World.Instance.GetComponent<SpeedComponent>(size2.Key);
+                                speed2.Speed *= -1;
+                                ECSManager.Instance.UpdateShapeSize(size2.Key.id, size2.Value.Size);
+
+                                TurnIntoGhost(size2.Value.Size, size2.Key);
+                            }
                         }
                     }
                 }
             }
+        }
+    }
 
+    private void TurnIntoGhost(float size, EntityComponent entity)
+    {
+        if (size < ECSManager.Instance.Config.minSize)
+        {
+            World.Instance.RemoveComponent<CanCollideComponent>(entity);
+            World.Instance.GetComponent<ColorComponent>(entity).Color = Color.green;
+            ECSManager.Instance.UpdateShapeColor(entity.id, Color.green);
         }
     }
 }

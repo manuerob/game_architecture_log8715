@@ -28,7 +28,6 @@ public class InitializationSystem : ISystem
             if (circleComponent.ShapeConfig.initialSpeed.magnitude < float.Epsilon)
             {
                 colorComponent.Color = Color.red;
-                World.Instance.AddComponent(entity, new IsStaticComponent());
                 nbOfStaticShape++;
             }
             else
@@ -44,8 +43,18 @@ public class InitializationSystem : ISystem
             World.Instance.AddComponent(entity, colorComponent);
             World.Instance.AddComponent(entity, sizeComponent);
 
+            if(sizeComponent.Size > ECSManager.Instance.Config.minSize)
+            {
+                World.Instance.AddComponent(entity, new CanCollideComponent());
+            }
+            else if(colorComponent.Color != Color.red)
+            {
+                colorComponent.Color = Color.green;
+            }
+
             ECSManager.Instance.CreateShape(entity.id, circleComponent.ShapeConfig);
             ECSManager.Instance.UpdateShapeColor(entity.id, colorComponent.Color);
+            ECSManager.Instance.UpdateShapePosition(entity.id, positionComponent.Position);
         }
 
         int quarterOfShapes = (int)(ECSManager.Instance.Config.allShapesToSpawn.Count * STATIC_SHAPE_RATIO);
@@ -65,7 +74,6 @@ public class InitializationSystem : ISystem
                 speedsToRemove.Add(speed);
 
                 ECSManager.Instance.UpdateShapeColor(speed.Key.id, Color.red);
-                World.Instance.AddComponent(speed.Key, new IsStaticComponent());
 
                 remainingShapesToChange--;
 
@@ -75,7 +83,7 @@ public class InitializationSystem : ISystem
 
             foreach (KeyValuePair<EntityComponent, SpeedComponent> component in speedsToRemove)
             {
-                speedDictionnary.Remove(component.Key);
+                World.Instance.RemoveComponent<SpeedComponent>(component.Key);
             }
 
             
