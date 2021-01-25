@@ -10,6 +10,7 @@ public class RegisterSystems
         // AJOUTEZ VOS SYSTEMS ICI
         toRegister.Add(new InitializationSystem());
         toRegister.Add(new UpdatePositionSystem());
+        toRegister.Add(new CollisionSystem());
 
         return toRegister;
     }

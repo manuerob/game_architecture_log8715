@@ -5,5 +5,5 @@ using static Config;
 
 public class CircleComponent : IComponent
 {
-    public ShapeConfig shapeConfig;
+    public ShapeConfig ShapeConfig;
 }
