@@ -4,7 +4,7 @@ using UnityEngine;
 using static Config;
 
 /// <summary>
-/// Mettre le 1/4 static avec la couleur
+/// Retirer speed component si il est a zero
 /// </summary>
 public class InitializationSystem : ISystem
 {
@@ -22,24 +22,27 @@ public class InitializationSystem : ISystem
             EntityComponent entity = new EntityComponent{ id = (uint)i };
             CircleComponent circleComponent = new CircleComponent{ ShapeConfig = ECSManager.Instance.Config.allShapesToSpawn[i] };
             PositionComponent positionComponent = new PositionComponent{ Position = ECSManager.Instance.Config.allShapesToSpawn[i].initialPos };
-            SpeedComponent speedComponent = new SpeedComponent{ Speed = ECSManager.Instance.Config.allShapesToSpawn[i].initialSpeed };
+            SizeComponent sizeComponent = new SizeComponent { Size = ECSManager.Instance.Config.allShapesToSpawn[i].size };
             ColorComponent colorComponent = new ColorComponent();
 
-            
-            if (speedComponent.Speed.magnitude < float.Epsilon)
+            if (circleComponent.ShapeConfig.initialSpeed.magnitude < float.Epsilon)
             {
                 colorComponent.Color = Color.red;
+                World.Instance.AddComponent(entity, new IsStaticComponent());
                 nbOfStaticShape++;
             }
             else
             {
+                SpeedComponent speedComponent = new SpeedComponent { Speed = ECSManager.Instance.Config.allShapesToSpawn[i].initialSpeed };
+                World.Instance.AddComponent(entity, speedComponent);
+
                 colorComponent.Color = Color.blue;
             }
 
             World.Instance.AddComponent(entity, circleComponent);
             World.Instance.AddComponent(entity, positionComponent);
-            World.Instance.AddComponent(entity, speedComponent);
             World.Instance.AddComponent(entity, colorComponent);
+            World.Instance.AddComponent(entity, sizeComponent);
 
             ECSManager.Instance.CreateShape(entity.id, circleComponent.ShapeConfig);
             ECSManager.Instance.UpdateShapeColor(entity.id, colorComponent.Color);
@@ -50,20 +53,32 @@ public class InitializationSystem : ISystem
         if (nbOfStaticShape < quarterOfShapes)
         {
             int remainingShapesToChange = quarterOfShapes - nbOfStaticShape;
-            foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
+
+            List<KeyValuePair<EntityComponent, SpeedComponent>> speedsToRemove = new List<KeyValuePair<EntityComponent, SpeedComponent>>();
+            
+            Dictionary<EntityComponent, SpeedComponent> speedDictionnary = World.Instance.GetComponentsDict<SpeedComponent>();
+
+            foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in speedDictionnary)
             {
-                if(speed.Value.Speed.magnitude > float.Epsilon)
-                {
-                    World.Instance.GetComponent<ColorComponent>(speed.Key).Color = Color.red;
-                    speed.Value.Speed = Vector2.zero;
-                    ECSManager.Instance.UpdateShapeColor(speed.Key.id, Color.red);
+                World.Instance.GetComponent<ColorComponent>(speed.Key).Color = Color.red;
 
-                    remainingShapesToChange--;
+                speedsToRemove.Add(speed);
 
-                    if (remainingShapesToChange == 0)
-                        break;
-                }
+                ECSManager.Instance.UpdateShapeColor(speed.Key.id, Color.red);
+                World.Instance.AddComponent(speed.Key, new IsStaticComponent());
+
+                remainingShapesToChange--;
+
+                if (remainingShapesToChange == 0)
+                    break;
             }
+
+            foreach (KeyValuePair<EntityComponent, SpeedComponent> component in speedsToRemove)
+            {
+                speedDictionnary.Remove(component.Key);
+            }
+
+            
         }
     }
 

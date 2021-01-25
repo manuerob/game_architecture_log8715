@@ -8,11 +8,13 @@ public class UpdatePositionSystem : ISystem
 
     public void UpdateSystem()
     {
-        foreach (KeyValuePair<EntityComponent, PositionComponent> position in World.Instance.GetComponentsDict<PositionComponent>())
+        foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
         {
-            position.Value.Position += World.Instance.GetComponent<SpeedComponent>(position.Key).Speed * Time.deltaTime;
+            PositionComponent position = World.Instance.GetComponent<PositionComponent>(speed.Key);
 
-            ECSManager.Instance.UpdateShapePosition(position.Key.id, position.Value.Position);
+            position.Position += speed.Value.Speed * Time.deltaTime;
+
+            ECSManager.Instance.UpdateShapePosition(speed.Key.id, position.Position);
         }
     }
 }
