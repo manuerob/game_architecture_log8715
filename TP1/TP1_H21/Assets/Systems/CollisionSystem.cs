@@ -19,95 +19,83 @@ public class CollisionSystem : ISystem
     {
         foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
         {
-            SizeComponent size = World.Instance.GetComponent<SizeComponent>(speed.Key);
-            PositionComponent position = World.Instance.GetComponent<PositionComponent>(speed.Key);
+            // Collide with other circles
+            CollideWithCircles();
 
-            if (World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(speed.Key))
+            // Check wall collisions and rebound if necessary
+            CollideWithWalls();
+        }
+    }
+
+    private void CollideWithCircles()
+    {
+        SizeComponent size = World.Instance.GetComponent<SizeComponent>(speed.Key);
+        PositionComponent position = World.Instance.GetComponent<PositionComponent>(speed.Key);
+
+        if (World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(speed.Key))
+        {
+            foreach (KeyValuePair<EntityComponent, SizeComponent> size2 in World.Instance.GetComponentsDict<SizeComponent>())
             {
-                foreach (KeyValuePair<EntityComponent, SizeComponent> size2 in World.Instance.GetComponentsDict<SizeComponent>())
+                if (speed.Key.id != size2.Key.id && World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(size2.Key))
                 {
-                    if (speed.Key.id != size2.Key.id && World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(size2.Key))
+                    PositionComponent position2 = World.Instance.GetComponent<PositionComponent>(size2.Key);
+
+                    if ((position2.Position - position.Position).magnitude < (size.Size + size2.Value.Size) / 2)
                     {
-                        PositionComponent position2 = World.Instance.GetComponent<PositionComponent>(size2.Key);
+                        size.Size /= 2;
+                        speed.Value.Speed *= -1;
+                        ECSManager.Instance.UpdateShapeSize(speed.Key.id, size.Size);
 
-                        if ((position2.Position - position.Position).magnitude < (size.Size + size2.Value.Size) / 2)
+                        TurnIntoGhost(size.Size, speed.Key);
+
+                        if (World.Instance.GetComponentsDict<SpeedComponent>().ContainsKey(size2.Key))
                         {
-                            size.Size /= 2;
-                            speed.Value.Speed *= -1;
-                            ECSManager.Instance.UpdateShapeSize(speed.Key.id, size.Size);
+                            size2.Value.Size /= 2;
+                            SpeedComponent speed2 = World.Instance.GetComponent<SpeedComponent>(size2.Key);
+                            speed2.Speed *= -1;
+                            ECSManager.Instance.UpdateShapeSize(size2.Key.id, size2.Value.Size);
 
-                            TurnIntoGhost(size.Size, speed.Key);
-
-                            if (World.Instance.GetComponentsDict<SpeedComponent>().ContainsKey(size2.Key))
-                            {
-                                size2.Value.Size /= 2;
-                                SpeedComponent speed2 = World.Instance.GetComponent<SpeedComponent>(size2.Key);
-                                speed2.Speed *= -1;
-                                ECSManager.Instance.UpdateShapeSize(size2.Key.id, size2.Value.Size);
-
-                                TurnIntoGhost(size2.Value.Size, size2.Key);
-                            }
+                            TurnIntoGhost(size2.Value.Size, size2.Key);
                         }
                     }
                 }
             }
-
-
-            if (CheckWallCollision(position.Position, size.Size / 2f, out Vector2 normal))
-            {
-                ReboundFromWall(speed.Key, normal);
-            }
         }
     }
 
-    // Check for edgecase (coin)
-    private bool CheckWallCollision(Vector2 position, float radius, out Vector2 normal)
+    private void CollideWithWalls()
     {
         for (int i = 0; i < 4; i++)
         {
-            Vector2 positionRelativeToWall = position - World.Instance.WallCenters[i];
-            normal = World.Instance.WallNormals[i];
+            Vector2 positionRelativeToWall = position.Position - World.Instance.WallCenters[i];
+            Vector2 normal = World.Instance.WallNormals[i];
 
             float distanceToWall = Vector2.Dot(positionRelativeToWall, normal);
 
-            if (distanceToWall - radius <= 0)
+            if (distanceToWall - size.Size / 2f <= 0)
             {
-                return true;
+                ReboundFromWall(speed.Key, normal, distanceToWall);
             }
         }
-
-        normal = Vector2.zero;
-        return false;
     }
 
-    private void ReboundFromWall(EntityComponent entity, Vector2 normal)
+    private void ReboundFromWall(EntityComponent entity, Vector2 normal, float distanceToWall)
     {
+        TurnIntoNotGhost(entity);
 
-        float previousSize = World.Instance.GetComponent<SizeComponent>(entity).Size;
-        Vector2 previousSpeed = World.Instance.GetComponent<SpeedComponent>(entity).Speed;
+        // Calculate rebound speed
+        SpeedComponent speed = World.Instance.GetComponent<SpeedComponent>(entity);
+        speed.Speed = speed.Speed - 2 * normal * Vector2.Dot(speed.Speed, normal);
 
+        // Calculate rebound position
+        PositionComponent position = World.Instance.GetComponent<PositionComponent>(entity);
+        SizeComponent size = World.Instance.GetComponent<SizeComponent>(entity);
+        position.Position += normal * (size.Size / 2 - distanceToWall);
 
-
-        World.Instance.GetComponent<SpeedComponent>(entity).Speed = previousSpeed - 2 * normal * Vector2.Dot(previousSpeed, normal);
-        World.Instance.GetComponent<ColorComponent>(entity).Color = Color.blue;
-
-        if (!World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(entity))
-            World.Instance.AddComponent<CanCollideComponent>(entity, new CanCollideComponent());
-        World.Instance.GetComponent<SizeComponent>(entity).Size = World.Instance.GetComponent<CircleComponent>(entity).ShapeConfig.size;
-
+        // Update the displayed circle
         ECSManager.Instance.UpdateShapeColor(entity.id, World.Instance.GetComponent<ColorComponent>(entity).Color);
         ECSManager.Instance.UpdateShapeSize(entity.id, World.Instance.GetComponent<SizeComponent>(entity).Size);
-
-        float deltaSize = World.Instance.GetComponent<SizeComponent>(entity).Size - previousSize;
-
-
-
-        PositionComponent position = World.Instance.GetComponent<PositionComponent>(entity);
-
-        position.Position += normal * deltaSize / 2 + (Mathf.Sign(deltaSize) * float.Epsilon * normal);// - previousSpeed * Time.deltaTime; // remplacer par le vrai delta position?
         ECSManager.Instance.UpdateShapePosition(entity.id, position.Position);
-
-
     }
 
     private void TurnIntoGhost(float size, EntityComponent entity)
@@ -118,5 +106,13 @@ public class CollisionSystem : ISystem
             World.Instance.GetComponent<ColorComponent>(entity).Color = Color.green;
             ECSManager.Instance.UpdateShapeColor(entity.id, Color.green);
         }
+    }
+
+    private void TurnIntoNotGhost(EntityComponent entity)
+    {
+        World.Instance.GetComponent<ColorComponent>(entity).Color = Color.blue;
+        if (!World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(entity))
+            World.Instance.AddComponent<CanCollideComponent>(entity, new CanCollideComponent());
+        World.Instance.GetComponent<SizeComponent>(entity).Size = World.Instance.GetComponent<CircleComponent>(entity).ShapeConfig.size;
     }
 }
