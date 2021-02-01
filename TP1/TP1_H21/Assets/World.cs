@@ -6,6 +6,22 @@ using System.Linq;
 
 public class World
 {
+    public readonly Vector2Int[] WallNormals = new Vector2Int[4]
+    {
+        new Vector2Int( 0,  1), // Bottom wall
+        new Vector2Int( 0, -1), // Top wall
+        new Vector2Int(-1,  0), // Right wall
+        new Vector2Int( 1,  0), // Left wall
+    };
+
+    public Vector2[] WallCenters = new Vector2[4]
+    {
+        new Vector2(),
+        new Vector2(),
+        new Vector2(),
+        new Vector2(),
+    };
+
     public bool isStarting = true;
 
     private Dictionary<Type, Dictionary<EntityComponent, IComponent>> components = new Dictionary<Type, Dictionary<EntityComponent, IComponent>>();

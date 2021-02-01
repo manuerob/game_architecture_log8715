@@ -88,6 +88,16 @@ public class InitializationSystem : ISystem
 
             
         }
+
+        InitializeWorldScreenPositions();
+    }
+
+    private void InitializeWorldScreenPositions()
+    {
+        World.Instance.WallCenters[0] = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, 0, 0));
+        World.Instance.WallCenters[1] = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height, 0));
+        World.Instance.WallCenters[2] = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height / 2f, 0));
+        World.Instance.WallCenters[3] = Camera.main.ScreenToWorldPoint(new Vector3(0, Screen.height / 2f, 0));
     }
 
     public void UpdateSystem()
