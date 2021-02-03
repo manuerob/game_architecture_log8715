@@ -20,14 +20,14 @@ public class CollisionSystem : ISystem
         foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
         {
             // Collide with other circles
-            CollideWithCircles();
+            CollideWithCircles(speed);
 
             // Check wall collisions and rebound if necessary
-            CollideWithWalls();
+            CollideWithWalls(speed.Key);
         }
     }
 
-    private void CollideWithCircles()
+    private void CollideWithCircles(KeyValuePair<EntityComponent, SpeedComponent> speed)
     {
         SizeComponent size = World.Instance.GetComponent<SizeComponent>(speed.Key);
         PositionComponent position = World.Instance.GetComponent<PositionComponent>(speed.Key);
@@ -44,7 +44,7 @@ public class CollisionSystem : ISystem
                     {
                         size.Size /= 2;
                         speed.Value.Speed *= -1;
-                        ECSManager.Instance.UpdateShapeSize(speed.Key.id, size.Size);
+                        //ECSManager.Instance.UpdateShapeSize(speed.Key.id, size.Size);
 
                         TurnIntoGhost(size.Size, speed.Key);
 
@@ -53,7 +53,7 @@ public class CollisionSystem : ISystem
                             size2.Value.Size /= 2;
                             SpeedComponent speed2 = World.Instance.GetComponent<SpeedComponent>(size2.Key);
                             speed2.Speed *= -1;
-                            ECSManager.Instance.UpdateShapeSize(size2.Key.id, size2.Value.Size);
+                            //ECSManager.Instance.UpdateShapeSize(size2.Key.id, size2.Value.Size);
 
                             TurnIntoGhost(size2.Value.Size, size2.Key);
                         }
@@ -63,8 +63,11 @@ public class CollisionSystem : ISystem
         }
     }
 
-    private void CollideWithWalls()
+    private void CollideWithWalls(EntityComponent entity)
     {
+        PositionComponent position = World.Instance.GetComponent<PositionComponent>(entity);
+        SizeComponent size = World.Instance.GetComponent<SizeComponent>(entity);
+
         for (int i = 0; i < 4; i++)
         {
             Vector2 positionRelativeToWall = position.Position - World.Instance.WallCenters[i];
@@ -74,7 +77,7 @@ public class CollisionSystem : ISystem
 
             if (distanceToWall - size.Size / 2f <= 0)
             {
-                ReboundFromWall(speed.Key, normal, distanceToWall);
+                ReboundFromWall(entity, normal, distanceToWall);
             }
         }
     }
@@ -93,9 +96,9 @@ public class CollisionSystem : ISystem
         position.Position += normal * (size.Size / 2 - distanceToWall);
 
         // Update the displayed circle
-        ECSManager.Instance.UpdateShapeColor(entity.id, World.Instance.GetComponent<ColorComponent>(entity).Color);
-        ECSManager.Instance.UpdateShapeSize(entity.id, World.Instance.GetComponent<SizeComponent>(entity).Size);
-        ECSManager.Instance.UpdateShapePosition(entity.id, position.Position);
+        //ECSManager.Instance.UpdateShapeColor(entity.id, World.Instance.GetComponent<ColorComponent>(entity).Color);
+        //ECSManager.Instance.UpdateShapeSize(entity.id, World.Instance.GetComponent<SizeComponent>(entity).Size);
+        //ECSManager.Instance.UpdateShapePosition(entity.id, position.Position);
     }
 
     private void TurnIntoGhost(float size, EntityComponent entity)
@@ -104,7 +107,7 @@ public class CollisionSystem : ISystem
         {
             World.Instance.RemoveComponent<CanCollideComponent>(entity);
             World.Instance.GetComponent<ColorComponent>(entity).Color = Color.green;
-            ECSManager.Instance.UpdateShapeColor(entity.id, Color.green);
+            //ECSManager.Instance.UpdateShapeColor(entity.id, Color.green);
         }
     }
 

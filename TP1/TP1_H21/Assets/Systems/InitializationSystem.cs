@@ -14,14 +14,22 @@ public class InitializationSystem : ISystem
 
     public void StartSystem()
     {
+        InitializeCircleEntities();
+
+        InitializeWorldScreenPositions();
+
+    }
+
+    private void InitializeCircleEntities()
+    {
         int nbOfStaticShape = 0;
 
         for (int i = 0, length = ECSManager.Instance.Config.allShapesToSpawn.Count; i < length; i++)
         {
             // Create entities and components
-            EntityComponent entity = new EntityComponent{ id = (uint)i };
-            CircleComponent circleComponent = new CircleComponent{ ShapeConfig = ECSManager.Instance.Config.allShapesToSpawn[i] };
-            PositionComponent positionComponent = new PositionComponent{ Position = ECSManager.Instance.Config.allShapesToSpawn[i].initialPos };
+            EntityComponent entity = new EntityComponent { id = World.Instance.GetNextId() };
+            CircleComponent circleComponent = new CircleComponent { ShapeConfig = ECSManager.Instance.Config.allShapesToSpawn[i] };
+            PositionComponent positionComponent = new PositionComponent { Position = ECSManager.Instance.Config.allShapesToSpawn[i].initialPos };
             SizeComponent sizeComponent = new SizeComponent { Size = ECSManager.Instance.Config.allShapesToSpawn[i].size };
             ColorComponent colorComponent = new ColorComponent();
 
@@ -43,11 +51,11 @@ public class InitializationSystem : ISystem
             World.Instance.AddComponent(entity, colorComponent);
             World.Instance.AddComponent(entity, sizeComponent);
 
-            if(sizeComponent.Size > ECSManager.Instance.Config.minSize)
+            if (sizeComponent.Size > ECSManager.Instance.Config.minSize)
             {
                 World.Instance.AddComponent(entity, new CanCollideComponent());
             }
-            else if(colorComponent.Color != Color.red)
+            else if (colorComponent.Color != Color.red)
             {
                 colorComponent.Color = Color.green;
             }
@@ -64,7 +72,7 @@ public class InitializationSystem : ISystem
             int remainingShapesToChange = quarterOfShapes - nbOfStaticShape;
 
             List<KeyValuePair<EntityComponent, SpeedComponent>> speedsToRemove = new List<KeyValuePair<EntityComponent, SpeedComponent>>();
-            
+
             Dictionary<EntityComponent, SpeedComponent> speedDictionnary = World.Instance.GetComponentsDict<SpeedComponent>();
 
             foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in speedDictionnary)
@@ -86,10 +94,9 @@ public class InitializationSystem : ISystem
                 World.Instance.RemoveComponent<SpeedComponent>(component.Key);
             }
 
-            
+
         }
 
-        InitializeWorldScreenPositions();
     }
 
     private void InitializeWorldScreenPositions()

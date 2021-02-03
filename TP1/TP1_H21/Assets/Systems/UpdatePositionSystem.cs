@@ -14,7 +14,7 @@ public class UpdatePositionSystem : ISystem
 
             position.Position += speed.Value.Speed * Time.deltaTime;
 
-            ECSManager.Instance.UpdateShapePosition(speed.Key.id, position.Position);
+            //ECSManager.Instance.UpdateShapePosition(speed.Key.id, position.Position);
         }
     }
 }

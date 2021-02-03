@@ -11,6 +11,9 @@ public class RegisterSystems
         toRegister.Add(new InitializationSystem());
         toRegister.Add(new UpdatePositionSystem());
         toRegister.Add(new CollisionSystem());
+        toRegister.Add(new SaveStateSystem());
+        toRegister.Add(new RestoreStateSystem());
+        toRegister.Add(new DisplaySystem()); //Last one to be registered
 
         return toRegister;
     }

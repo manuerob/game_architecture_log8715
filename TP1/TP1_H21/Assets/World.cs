@@ -1,11 +1,18 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
 public class World
 {
+    public uint idCount = 0;
+
+    public readonly float coolDownInitialValue = 2.0f;
+
+    public float coolDownValue = 2.0f;
+
+    public Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>> backUpStates = new Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>>();
+
     public readonly Vector2Int[] WallNormals = new Vector2Int[4]
     {
         new Vector2Int( 0,  1), // Bottom wall
@@ -24,35 +31,66 @@ public class World
 
     public bool isStarting = true;
 
-    private Dictionary<Type, Dictionary<EntityComponent, IComponent>> components = new Dictionary<Type, Dictionary<EntityComponent, IComponent>>();
+    private Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>> components = new Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>();
 
-    public void RegisterComponentsDict<ComponentType>(Dictionary<EntityComponent, ComponentType> newComponentDict) where ComponentType : IComponent
+    public void RegisterComponentsDict<ComponentType>(Dictionary<EntityComponent, ComponentType> newComponentDict) where ComponentType : ICopiableComponent
     {
         components.Add(typeof(ComponentType), newComponentDict.ToDictionary(entry => entry.Key,
-                                                                            entry => (IComponent)entry.Value));
+                                                                            entry => (ICopiableComponent)entry.Value));
     }
 
-    public Dictionary<EntityComponent, ComponentType> GetComponentsDict<ComponentType>() where ComponentType : IComponent
+    public Dictionary<EntityComponent, ComponentType> GetComponentsDict<ComponentType>() where ComponentType : ICopiableComponent
     {
         return components[typeof(ComponentType)].ToDictionary(entry => entry.Key,
                                                               entry => (ComponentType)entry.Value);
     }
 
-    public void RemoveComponent<ComponentType>(EntityComponent entity) where ComponentType : IComponent
+    public void RemoveComponent<ComponentType>(EntityComponent entity) where ComponentType : ICopiableComponent
     {
         if (components.ContainsKey(typeof(ComponentType)))
             components[typeof(ComponentType)].Remove(entity);
     }
 
-    public void AddComponent<ComponentType>(EntityComponent entity, ComponentType newComponent) where ComponentType : IComponent
+    public void AddComponent<ComponentType>(EntityComponent entity, ComponentType newComponent) where ComponentType : ICopiableComponent
     {
         if (!components.ContainsKey(typeof(ComponentType)))
             RegisterComponentsDict(new Dictionary<EntityComponent, ComponentType>());
         components[typeof(ComponentType)].Add(entity, newComponent);
     }
-    public ComponentType GetComponent<ComponentType>(EntityComponent index) where ComponentType : IComponent
+    public ComponentType GetComponent<ComponentType>(EntityComponent index) where ComponentType : ICopiableComponent
     {
         return GetComponentsDict<ComponentType>()[index];
+    }
+
+    public Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>> DeepCopyComponent()
+    {
+        Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>> newDict = new Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>();
+
+        foreach(var componentDictionnary in components)
+        {
+            Dictionary<EntityComponent, ICopiableComponent> newComponentDictionnary = new Dictionary<EntityComponent, ICopiableComponent>();
+            newDict.Add(componentDictionnary.Key, newComponentDictionnary);
+
+            foreach(var component in componentDictionnary.Value)
+            {
+                newComponentDictionnary.Add(component.Key, (ICopiableComponent)component.Value.Clone());
+            }
+        }
+
+        return newDict;
+    }
+
+    public void RestoreState()
+    {
+        components = backUpStates.Dequeue().Value;
+
+        backUpStates.Clear();
+
+    }
+
+    public uint GetNextId()
+    {
+        return idCount ++;
     }
 
     #region Singleton
