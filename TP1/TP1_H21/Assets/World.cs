@@ -5,14 +5,8 @@ using System.Linq;
 
 public class World
 {
-    public uint idCount = 0;
-
-    public readonly float coolDownInitialValue = 2.0f;
-
-    public float coolDownValue = 2.0f;
-
-    public Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>> backUpStates = new Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>>();
-
+    public readonly float cooldownInitialValue = 2.0f;
+    public readonly int timescale = 4;
     public readonly Vector2Int[] WallNormals = new Vector2Int[4]
     {
         new Vector2Int( 0,  1), // Bottom wall
@@ -28,8 +22,13 @@ public class World
         new Vector2(),
         new Vector2(),
     };
-
+    public uint idCount = 0;
+    public float cooldownValue = 2.0f;
+    public float HalfScreenHeightPosition;
     public bool isStarting = true;
+
+    public Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>> backUpStates = new Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>>();
+    public List<ISystemUpdatablePerEntity> simulationSystems = new List<ISystemUpdatablePerEntity>();
 
     private Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>> components = new Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>();
 
@@ -57,6 +56,7 @@ public class World
             RegisterComponentsDict(new Dictionary<EntityComponent, ComponentType>());
         components[typeof(ComponentType)].Add(entity, newComponent);
     }
+
     public ComponentType GetComponent<ComponentType>(EntityComponent index) where ComponentType : ICopiableComponent
     {
         return GetComponentsDict<ComponentType>()[index];
@@ -86,11 +86,19 @@ public class World
 
         backUpStates.Clear();
 
+        cooldownValue = cooldownInitialValue;
     }
 
     public uint GetNextId()
     {
-        return idCount ++;
+        return idCount++;
+    }
+
+    public void RegisterSimulationSystems()
+    {
+        simulationSystems.Add(new UpdateTimesToRepeatSimulationSystem());
+        simulationSystems.Add(new UpdatePositionSystem());
+        simulationSystems.Add(new CollisionSystem());
     }
 
     #region Singleton
@@ -102,6 +110,8 @@ public class World
             if (_instance == null)
             {
                 _instance = new World();
+
+                _instance.RegisterSimulationSystems();
             }
             return _instance;
         }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class RestoreStateSystem : ISystem
 {
@@ -8,23 +6,20 @@ public class RestoreStateSystem : ISystem
 
     public void UpdateSystem()
     {
-        if(World.Instance.coolDownValue <= float.Epsilon)
+        if (World.Instance.cooldownValue <= float.Epsilon)
         {
             if (Input.GetKeyDown("space"))
             {
                 World.Instance.RestoreState();
-                World.Instance.coolDownValue = World.Instance.coolDownInitialValue;
-
             }
         }
         else
         {
             if (Input.GetKeyDown("space"))
             {
-                Debug.Log("Time remaining (s): " + World.Instance.coolDownValue);
-
+                Debug.Log("Time remaining (s): " + World.Instance.cooldownValue);
             }
-            World.Instance.coolDownValue -= Time.deltaTime;
+            World.Instance.cooldownValue -= Time.deltaTime;
         }
     }
 }

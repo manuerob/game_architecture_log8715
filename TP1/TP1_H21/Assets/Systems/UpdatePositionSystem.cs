@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class UpdatePositionSystem : ISystem
+public class UpdatePositionSystem : ISystemUpdatablePerEntity
 {
     public string Name => "UpdatePositionSystem";
 
@@ -10,11 +9,14 @@ public class UpdatePositionSystem : ISystem
     {
         foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
         {
-            PositionComponent position = World.Instance.GetComponent<PositionComponent>(speed.Key);
-
-            position.Position += speed.Value.Speed * Time.deltaTime;
-
-            //ECSManager.Instance.UpdateShapePosition(speed.Key.id, position.Position);
+            UpdatePerEntity(speed.Key);
         }
+    }
+    public void UpdatePerEntity(EntityComponent entity)
+    {
+        PositionComponent position = World.Instance.GetComponent<PositionComponent>(entity);
+        SpeedComponent speed = World.Instance.GetComponent<SpeedComponent>(entity);
+
+        position.Position += speed.Speed * Time.deltaTime;
     }
 }

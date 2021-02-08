@@ -14,19 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minSize: 0.7
   allShapesToSpawn:
-  - initialPos: {x: 0, y: 0}
+  - initialPos: {x: 0, y: -0.46}
     size: 3
     initialSpeed: {x: 3, y: 3}
   - initialPos: {x: 3, y: 3}
     size: 1
     initialSpeed: {x: 0, y: 0}
   _systemsEnabled:
-    keys:
-    - InitializationSystem
-    - TagSystem
-    - PositionUpdateSystem
-    - CollisionSystem
-    - SaveStateSystem
-    - RestoreStateSystem
-    - UpdatePositionSystem
-    values: 01010101010101
+    keys: []
+    values: 
