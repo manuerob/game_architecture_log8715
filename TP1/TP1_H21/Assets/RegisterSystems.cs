@@ -9,8 +9,14 @@ public class RegisterSystems
 
         // AJOUTEZ VOS SYSTEMS ICI
         toRegister.Add(new InitializationSystem());
-        toRegister.AddRange(World.Instance.simulationSystems);
-        toRegister.Add(new RepeatSimulationSystem());
+
+        for(int i = 0; i < World.Instance.timescale; i++)
+        {
+            toRegister.Add(new UpdatePositionSystem());
+            toRegister.Add(new CollisionSystem());
+            toRegister.Add(new UpdateTimesToExecuteSimulationSystem());
+        }
+
         toRegister.Add(new SaveStateSystem());
         toRegister.Add(new RestoreStateSystem());
         toRegister.Add(new DisplaySystem());

@@ -6,7 +6,7 @@ using System.Linq;
 public class World
 {
     public readonly float cooldownInitialValue = 2.0f;
-    public readonly int timescale = 4;
+    public readonly int timescale = 5;
     public readonly Vector2Int[] WallNormals = new Vector2Int[4]
     {
         new Vector2Int( 0,  1), // Bottom wall
@@ -28,7 +28,6 @@ public class World
     public bool isStarting = true;
 
     public Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>> backUpStates = new Queue<KeyValuePair<DateTime, Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>>>();
-    public List<ISystemUpdatablePerEntity> simulationSystems = new List<ISystemUpdatablePerEntity>();
 
     private Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>> components = new Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>>();
 
@@ -60,6 +59,13 @@ public class World
     public ComponentType GetComponent<ComponentType>(EntityComponent index) where ComponentType : ICopiableComponent
     {
         return GetComponentsDict<ComponentType>()[index];
+    }
+
+    public bool HasComponent<ComponentType>(EntityComponent index) where ComponentType : ICopiableComponent
+    {
+        if (components.ContainsKey(typeof(ComponentType)))
+            return GetComponentsDict<ComponentType>().ContainsKey(index);
+        return false;
     }
 
     public Dictionary<Type, Dictionary<EntityComponent, ICopiableComponent>> DeepCopyComponent()
@@ -94,12 +100,6 @@ public class World
         return idCount++;
     }
 
-    public void RegisterSimulationSystems()
-    {
-        simulationSystems.Add(new UpdateTimesToRepeatSimulationSystem());
-        simulationSystems.Add(new UpdatePositionSystem());
-        simulationSystems.Add(new CollisionSystem());
-    }
 
     #region Singleton
     private static World _instance;
@@ -110,8 +110,6 @@ public class World
             if (_instance == null)
             {
                 _instance = new World();
-
-                _instance.RegisterSimulationSystems();
             }
             return _instance;
         }

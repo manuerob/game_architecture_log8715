@@ -43,7 +43,7 @@ public class InitializationSystem : ISystem
         else
         {
             SpeedComponent speedComponent = new SpeedComponent { Speed = shapeConfig.initialSpeed };
-            TimesToRepeatSimulationComponent timesToExecuteComponent = new TimesToRepeatSimulationComponent { TimesToRepeat = World.Instance.timescale };
+            TimesToExecuteSimulationComponent timesToExecuteComponent = new TimesToExecuteSimulationComponent { TimesToExecute = World.Instance.timescale };
             World.Instance.AddComponent(entity, speedComponent);
             World.Instance.AddComponent(entity, timesToExecuteComponent);
 
@@ -116,6 +116,16 @@ public class InitializationSystem : ISystem
             World.Instance.isStarting = false;
 
             StartSystem();
+        }
+
+        Dictionary<EntityComponent, TimesToExecuteSimulationComponent> times = World.Instance.GetComponentsDict<TimesToExecuteSimulationComponent>();
+
+        foreach (KeyValuePair<EntityComponent, TimesToExecuteSimulationComponent> timeToExecute in times)
+        {
+            timeToExecute.Value.TimesToExecute = World.Instance.timescale;
+            if(!World.Instance.HasComponent<CanUpdateSimulationComponent>(timeToExecute.Key))
+                World.Instance.AddComponent(timeToExecute.Key, new CanUpdateSimulationComponent());
+
         }
     }
 }

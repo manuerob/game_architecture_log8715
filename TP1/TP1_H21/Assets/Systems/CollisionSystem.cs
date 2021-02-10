@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class CollisionSystem : ISystemUpdatablePerEntity
+public class CollisionSystem : ISystem
 {
     public string Name => "CollisionSystem";
 
@@ -17,7 +17,8 @@ public class CollisionSystem : ISystemUpdatablePerEntity
     {
         foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
         {
-            UpdatePerEntity(speed.Key);
+            if (World.Instance.HasComponent<CanUpdateSimulationComponent>(speed.Key))
+                UpdatePerEntity(speed.Key);
         }
     }
 
@@ -32,12 +33,12 @@ public class CollisionSystem : ISystemUpdatablePerEntity
 
     private void CollideWithCircles(EntityComponent entity)
     {
-        if (World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(entity))
+        if (World.Instance.HasComponent<CanCollideComponent>(entity))
         {
             foreach (KeyValuePair<EntityComponent, SizeComponent> other in World.Instance.GetComponentsDict<SizeComponent>())
             {
                 if (entity.id != other.Key.id
-                    && World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(other.Key))
+                    && World.Instance.HasComponent<CanCollideComponent>(other.Key))
                 {
                     SizeComponent size = World.Instance.GetComponent<SizeComponent>(entity);
                     SizeComponent size2 = other.Value;
@@ -48,7 +49,7 @@ public class CollisionSystem : ISystemUpdatablePerEntity
                     {
                         ReboundFromCircle(entity);
 
-                        if (World.Instance.GetComponentsDict<SpeedComponent>().ContainsKey(other.Key))
+                        if (World.Instance.HasComponent<SpeedComponent>(other.Key))
                         {
                             ReboundFromCircle(other.Key);
                         }
@@ -115,7 +116,7 @@ public class CollisionSystem : ISystemUpdatablePerEntity
     private void TurnIntoNotGhost(EntityComponent entity)
     {
         World.Instance.GetComponent<ColorComponent>(entity).Color = Color.blue;
-        if (!World.Instance.GetComponentsDict<CanCollideComponent>().ContainsKey(entity))
+        if (!World.Instance.HasComponent<CanCollideComponent>(entity))
             World.Instance.AddComponent<CanCollideComponent>(entity, new CanCollideComponent());
         World.Instance.GetComponent<SizeComponent>(entity).Size = World.Instance.GetComponent<CircleComponent>(entity).ShapeConfig.size;
     }

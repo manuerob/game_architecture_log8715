@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class UpdatePositionSystem : ISystemUpdatablePerEntity
+public class UpdatePositionSystem : ISystem
 {
     public string Name => "UpdatePositionSystem";
 
@@ -9,7 +9,8 @@ public class UpdatePositionSystem : ISystemUpdatablePerEntity
     {
         foreach (KeyValuePair<EntityComponent, SpeedComponent> speed in World.Instance.GetComponentsDict<SpeedComponent>())
         {
-            UpdatePerEntity(speed.Key);
+            if(World.Instance.HasComponent<CanUpdateSimulationComponent>(speed.Key))
+                UpdatePerEntity(speed.Key);
         }
     }
     public void UpdatePerEntity(EntityComponent entity)
