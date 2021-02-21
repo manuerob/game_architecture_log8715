@@ -21,5 +21,12 @@ MonoBehaviour:
     size: 1
     initialSpeed: {x: 0, y: 0}
   _systemsEnabled:
-    keys: []
-    values: 
+    keys:
+    - InitializationSystem
+    - UpdatePositionSystem
+    - CollisionSystem
+    - UpdateTimesToExecuteSimulationSystem
+    - SaveStateSystem
+    - RestoreStateSystem
+    - DisplaySystem
+    values: 01010101010101
