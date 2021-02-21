@@ -2,13 +2,15 @@
 
 using System;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Collections;
 
 #if BAD_PERF
-using InnerType = System.Collections.Generic.Dictionary<uint, IComponent>;
+using InnerType = System.Collections.Generic.Dictionary<uint, IComponent>;// SeqPool<IComponent>
 using AllComponents = System.Collections.Generic.Dictionary<uint, System.Collections.Generic.Dictionary<uint, IComponent>>;
 #else
-using InnerType = ...; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
-using AllComponents = ...; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
+using InnerType = SeqPool<IComponent>; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
+using AllComponents = System.Collections.Generic.Dictionary<uint, SeqPool<IComponent>>; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
 #endif
 
 // Appeler GetHashCode sur un Type est couteux. Cette classe sert a precalculer le hashcode
@@ -179,5 +181,57 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     public AllComponents DebugGetAllComponents()
     {
         return _allComponents;
+    }
+}
+
+// 1. Remplacer le InnerType par le seqpool (implémenter le seqpool, remplacer avec le define badperfs)
+// 2. Tester pour voir si on réduit le load de 40%
+// 3. Remplacer le AllComponents par quelque chose d'autre que le dict de <uint, seqpool>
+public class SeqPool<T>
+{
+
+    public T this[EntityComponent key]
+    {
+        get => GetValue(key);
+        set => SetValue(key, value);
+    }
+
+    private void SetValue(EntityComponent key, T value)
+    {
+        throw new NotImplementedException();
+    }
+
+    private T GetValue(EntityComponent key)
+    {
+        throw new NotImplementedException();
+    }
+
+    public int Count => throw new NotImplementedException();
+
+    public object Values { get; internal set; }
+
+    public void Add(T item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Clear()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Contains(T item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Remove(T item)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal bool ContainsKey(EntityComponent entityID)
+    {
+        throw new NotImplementedException();
     }
 }
