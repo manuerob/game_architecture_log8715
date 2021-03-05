@@ -11,7 +11,7 @@ using InnerType = System.Collections.Generic.Dictionary<uint, IComponent>;
 using AllComponents = System.Collections.Generic.Dictionary<uint, System.Collections.Generic.Dictionary<uint, IComponent>>;
 #else
 using InnerType = SeqPool<IComponent>; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
-using AllComponents = SeqPoolManager;//System.Collections.Generic.Dictionary<uint, SeqPool<IComponent>>; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
+using AllComponents = System.Collections.Generic.Dictionary<uint, SeqPool<IComponent>>; // TODO CHANGEZ MOI, UTILISEZ VOTRE PROPRE TYPE ICI
 #endif
 
 // Appeler GetHashCode sur un Type est couteux. Cette classe sert a precalculer le hashcode
@@ -49,22 +49,21 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     {
         string toPrint = "";
         var allComponents = Instance.DebugGetAllComponents();
-#if BAD_PERF
         foreach (var type in allComponents)
         {
             toPrint += $"{type}: \n";
+
+#if BAD_PERF
             foreach (var component in type.Value)
             {
                 toPrint += $"\t{component.Key}: {component.Value}\n";
             }
 #else
-        foreach (var type in allComponents.seqPools)
-        {
-            for (int i = 0, length = type.AllocatedCount; i < length; i++)
+            for (int i = 0, length = type.Value.AllocatedCount; i < length; i++)
             {
-                if (type.ContainsKey(i))
+                if (type.Value.ContainsKey(i))
                 {
-                    toPrint += $"\t{i}: {type.GetValue(i)}\n";
+                    toPrint += $"\t{i}: {type.Value.GetValue(i)}\n";
                 }
             }
 #endif
@@ -80,13 +79,9 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         {
             //_allComponents[TypeRegistry<T>.typeID] = new Dictionary<uint, IComponent>();
             //_allComponents[TypeRegistry<T>.typeID] = new InnerType();
-            _allComponents.Add(TypeRegistry<T>.typeID, new SeqPool<T>());
+            _allComponents.Add(TypeRegistry<T>.typeID, new InnerType());
         }
-#if BAD_PERF
         _allComponents[TypeRegistry<T>.typeID][entityID] = component;
-#else
-        ((InnerType)_allComponents[TypeRegistry<T>.typeID])[entityID] = component;
-#endif
     }
     public void RemoveComponent<T>(EntityComponent entityID) where T : IComponent
     {
@@ -94,11 +89,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     }
     public T GetComponent<T>(EntityComponent entityID) where T : IComponent
     {
-#if BAD_PERF
         return (T)_allComponents[TypeRegistry<T>.typeID][entityID];
-#else
-        return (T)((InnerType)_allComponents[TypeRegistry<T>.typeID])[entityID];
-#endif
     }
     public bool TryGetComponent<T>(EntityComponent entityID, out T component) where T : IComponent
     {
@@ -106,11 +97,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         {
             if (_allComponents[TypeRegistry<T>.typeID].ContainsKey(entityID))
             {
-#if BAD_PERF
                 component = (T)_allComponents[TypeRegistry<T>.typeID][entityID];
-#else
-                component = (T)((InnerType)_allComponents[TypeRegistry<T>.typeID])[entityID];
-#endif
                 return true;
             }
         }
@@ -127,7 +114,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     {
         if (!_allComponents.ContainsKey(TypeRegistry<T>.typeID))
         {
-            _allComponents.Add(TypeRegistry<T>.typeID, new SeqPool<T>());
+            _allComponents.Add(TypeRegistry<T>.typeID, new InnerType());
         }
         else
         {
@@ -148,15 +135,15 @@ internal class ComponentsManager : Singleton<ComponentsManager>
             lambda(entity, (T1)_allComponents[TypeRegistry<T1>.typeID][entity]);
         }
 #else
-        SeqPool<EntityComponent> entities = (SeqPool<EntityComponent>)_allComponents[TypeRegistry<EntityComponent>.typeID];
+        InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
         for (int i = 0, length = entities.Count; i < length; i++)
         {
-            EntityComponent entity = entities[i];
+            EntityComponent entity = (EntityComponent)entities[i];
             var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
 
             if (T1SeqPool.ContainsKey(entity))
             {
-                lambda(entity, ((SeqPool<T1>)T1SeqPool)[entity]);
+                lambda(entity, (T1)T1SeqPool[entity]);
             }
         }
 #endif
@@ -177,7 +164,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
             lambda(entity, (T1)_allComponents[TypeRegistry<T1>.typeID][entity], (T2)_allComponents[TypeRegistry<T2>.typeID][entity]);
         }
 #else
-        SeqPool<EntityComponent> entities = (SeqPool<EntityComponent>)_allComponents[TypeRegistry<EntityComponent>.typeID];
+        InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
@@ -187,7 +174,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
             if (T1SeqPool.ContainsKey(entity)
                 && T2SeqPool.ContainsKey(entity))
             {
-                lambda(entity, ((SeqPool<T1>)T1SeqPool)[entity], ((SeqPool<T2>)T2SeqPool)[entity]);
+                lambda(entity, (T1)T1SeqPool[entity], (T2)T2SeqPool[entity]);
             }
         }
 #endif
@@ -209,7 +196,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
             lambda(entity, (T1)_allComponents[TypeRegistry<T1>.typeID][entity], (T2)_allComponents[TypeRegistry<T2>.typeID][entity], (T3)_allComponents[TypeRegistry<T3>.typeID][entity]);
         }
 #else
-        SeqPool<EntityComponent> entities = (SeqPool<EntityComponent>)_allComponents[TypeRegistry<EntityComponent>.typeID];
+        InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
@@ -221,7 +208,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
                 && T2SeqPool.ContainsKey(entity)
                 && T3SeqPool.ContainsKey(entity))
             {
-                lambda(entity, ((SeqPool<T1>)T1SeqPool)[entity], ((SeqPool<T2>)T2SeqPool)[entity], ((SeqPool<T3>)T3SeqPool)[entity]);
+                lambda(entity, (T1)T1SeqPool[entity], (T2)T2SeqPool[entity], (T3)T3SeqPool[entity]);
             }
         }
 #endif
@@ -244,7 +231,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
             lambda(entity, (T1)_allComponents[TypeRegistry<T1>.typeID][entity], (T2)_allComponents[TypeRegistry<T2>.typeID][entity], (T3)_allComponents[TypeRegistry<T3>.typeID][entity], (T4)_allComponents[TypeRegistry<T4>.typeID][entity]);
         }
 #else
-        SeqPool<EntityComponent> entities = (SeqPool<EntityComponent>)_allComponents[TypeRegistry<EntityComponent>.typeID];
+        InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
@@ -258,7 +245,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
                 && T3SeqPool.ContainsKey(entity)
                 && T4SeqPool.ContainsKey(entity))
             {
-                lambda(entity, ((SeqPool<T1>)T1SeqPool)[entity], ((SeqPool<T2>)T2SeqPool)[entity], ((SeqPool<T3>)T3SeqPool)[entity], ((SeqPool<T4>)T4SeqPool)[entity]);
+                lambda(entity, (T1)T1SeqPool[entity], (T2)T2SeqPool[entity], (T3)T3SeqPool[entity], (T4)T4SeqPool[entity]);
             }
         }
 #endif
@@ -270,62 +257,20 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     }
 }
 
-public class SeqPoolManager
-{
-    public List<ISeqPool> seqPools;
-
-    public SeqPoolManager()
-    {
-        seqPools = new List<ISeqPool>();
-    }
-
-    public ISeqPool this[uint key] => seqPools.First(x => x.TypeId() == key);
-
-    internal void Add<T>(uint typeID, SeqPool<T> seqPool) where T : IComponent
-    {
-        seqPools.Add(seqPool);
-    }
-
-    internal bool ContainsKey(uint typeID)
-    {
-        foreach (ISeqPool seqPool in seqPools)
-        {
-            if (seqPool.TypeId() == typeID)
-                return true;
-        }
-
-        return false;
-    }
-}
-
-public interface ISeqPool
-{
-    int AllocatedCount { get; }
-
-    void Clear();
-    bool ContainsKey(EntityComponent entity);
-    bool ContainsKey(int i);
-    IComponent GetValue(int i);
-    void Remove(EntityComponent entityID);
-    uint TypeId();
-    
-}
-
 // 1. Remplacer le InnerType par le seqpool (implémenter le seqpool, remplacer avec le define badperfs)
 // 2. Tester pour voir si on réduit le load de 40%
 // 3. Remplacer le AllComponents par quelque chose d'autre que le dict de <uint, pool>
-public class SeqPool<T> : ISeqPool where T:IComponent
+public class SeqPool<T>
 {
     private T[] _arrayItems;
     private int[] _indirectionTable;
     private int _count;
-    private uint _typeId;
 
     public bool ContainsKey(EntityComponent key) => _indirectionTable[key.id] != -1;
     public bool ContainsKey(int key) => _indirectionTable[key] != -1;
     public int Count => _count;
     public int AllocatedCount => _indirectionTable.Length;
-    public uint TypeId() => _typeId;
+
 
     public T this[EntityComponent key]
     {
@@ -335,7 +280,7 @@ public class SeqPool<T> : ISeqPool where T:IComponent
 
     public T this[int key]
     {
-        get => (T)GetValue(key);
+        get => GetValue(key);
     }
 
     public SeqPool(int initialAllocationSize = 500)
@@ -344,7 +289,6 @@ public class SeqPool<T> : ISeqPool where T:IComponent
         _indirectionTable = Enumerable.Repeat(-1, initialAllocationSize).ToArray();
 
         _count = 0;
-        _typeId = TypeRegistry<T>.typeID;
     }
 
     private void SetValue(EntityComponent key, T value)
@@ -387,7 +331,7 @@ public class SeqPool<T> : ISeqPool where T:IComponent
         return _arrayItems[_indirectionTable[key.id]];
     }
 
-    public IComponent GetValue(int key)
+    public T GetValue(int key)
     {
         return _arrayItems[_indirectionTable[key]];
     }
