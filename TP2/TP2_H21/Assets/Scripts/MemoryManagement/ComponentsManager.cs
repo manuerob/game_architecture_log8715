@@ -1,4 +1,4 @@
-﻿#define BAD_PERF // TODO CHANGEZ MOI. Mettre en commentaire pour utiliser votre propre structure
+﻿//#define BAD_PERF // TODO CHANGEZ MOI. Mettre en commentaire pour utiliser votre propre structure
 
 using System;
 using UnityEngine;
