@@ -77,8 +77,6 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     {
         if (!_allComponents.ContainsKey(TypeRegistry<T>.typeID))
         {
-            //_allComponents[TypeRegistry<T>.typeID] = new Dictionary<uint, IComponent>();
-            //_allComponents[TypeRegistry<T>.typeID] = new InnerType();
             _allComponents.Add(TypeRegistry<T>.typeID, new InnerType());
         }
         _allComponents[TypeRegistry<T>.typeID][entityID] = component;
@@ -261,9 +259,6 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     }
 }
 
-// 1. Remplacer le InnerType par le seqpool (implémenter le seqpool, remplacer avec le define badperfs)
-// 2. Tester pour voir si on réduit le load de 40%
-// 3. Remplacer le AllComponents par quelque chose d'autre que le dict de <uint, pool>
 public class SeqPool<T>
 {
     private T[] _arrayItems;
@@ -274,7 +269,6 @@ public class SeqPool<T>
     public bool ContainsKey(int key) => _indirectionTable[key] != -1;
     public int Count => _count;
     public int AllocatedCount => _indirectionTable.Length;
-
 
     public T this[EntityComponent key]
     {
