@@ -136,10 +136,11 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         }
 #else
         InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
+        var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
+
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
-            var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
 
             if (T1SeqPool.ContainsKey(entity))
             {
@@ -165,11 +166,12 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         }
 #else
         InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
+        var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
+        var T2SeqPool = _allComponents[TypeRegistry<T2>.typeID];
+
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
-            var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
-            var T2SeqPool = _allComponents[TypeRegistry<T2>.typeID];
 
             if (T1SeqPool.ContainsKey(entity)
                 && T2SeqPool.ContainsKey(entity))
@@ -197,12 +199,13 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         }
 #else
         InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
+        var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
+        var T2SeqPool = _allComponents[TypeRegistry<T2>.typeID];
+        var T3SeqPool = _allComponents[TypeRegistry<T3>.typeID];
+
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
-            var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
-            var T2SeqPool = _allComponents[TypeRegistry<T2>.typeID];
-            var T3SeqPool = _allComponents[TypeRegistry<T3>.typeID];
 
             if (T1SeqPool.ContainsKey(entity)
                 && T2SeqPool.ContainsKey(entity)
@@ -232,13 +235,14 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         }
 #else
         InnerType entities = _allComponents[TypeRegistry<EntityComponent>.typeID];
+        var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
+        var T2SeqPool = _allComponents[TypeRegistry<T2>.typeID];
+        var T3SeqPool = _allComponents[TypeRegistry<T3>.typeID];
+        var T4SeqPool = _allComponents[TypeRegistry<T4>.typeID];
+
         for (int i = 0, length = entities.Count; i < length; i++)
         {
             EntityComponent entity = (EntityComponent)entities[i];
-            var T1SeqPool = _allComponents[TypeRegistry<T1>.typeID];
-            var T2SeqPool = _allComponents[TypeRegistry<T2>.typeID];
-            var T3SeqPool = _allComponents[TypeRegistry<T3>.typeID];
-            var T4SeqPool = _allComponents[TypeRegistry<T4>.typeID];
 
             if (T1SeqPool.ContainsKey(entity)
                 && T2SeqPool.ContainsKey(entity)
@@ -283,10 +287,10 @@ public class SeqPool<T>
         get => GetValue(key);
     }
 
-    public SeqPool(int initialAllocationSize = 500)
+    public SeqPool()
     {
-        _arrayItems = new T[initialAllocationSize];
-        _indirectionTable = Enumerable.Repeat(-1, initialAllocationSize).ToArray();
+        _arrayItems = new T[ECSManager.Instance.Config.numberOfShapesToSpawn];
+        _indirectionTable = Enumerable.Repeat(-1, ECSManager.Instance.Config.numberOfShapesToSpawn).ToArray();
 
         _count = 0;
     }
@@ -306,7 +310,7 @@ public class SeqPool<T>
     private void AddValue(EntityComponent key, T value)
     {
         int poolAllocationSize = _indirectionTable.Length;
-        if (key.id > poolAllocationSize)
+        if (key.id >= poolAllocationSize)
         {
             int[] newIndirections = Enumerable.Repeat(-1, poolAllocationSize * 2).ToArray();
             T[] newValuesArray = new T[poolAllocationSize * 2];
@@ -353,12 +357,13 @@ public class SeqPool<T>
             return;
         }
 
-        int positionToReplace = _indirectionTable[key.id];
-
-        _arrayItems[positionToReplace] = _arrayItems[_count - 1];
         _count--;
-        _indirectionTable[key.id] = -1;
 
-        _indirectionTable[Array.IndexOf(_indirectionTable, _count)] = positionToReplace;
+        if (_count != _indirectionTable[key.id])
+        {
+            _arrayItems[_indirectionTable[key.id]] = _arrayItems[_count - 1];
+            _indirectionTable[Array.IndexOf(_indirectionTable, _count)] = _indirectionTable[key.id];
+            _indirectionTable[key.id] = -1;
+        }
     }
 }
