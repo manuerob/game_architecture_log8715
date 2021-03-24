@@ -57,6 +57,21 @@ public class CustomNetworkManager : NetworkingManager
         }
     }
 
+    public void SendInputMessage(InputMessage msg)
+    {
+        using (PooledBitStream stream = PooledBitStream.Get())
+        {
+            using (PooledBitWriter writer = PooledBitWriter.Get(stream))
+            {
+                writer.WriteInt32(msg.messageID);
+                writer.WriteInt32(msg.timeCreated);
+                writer.WriteUInt32(msg.entityId);
+                writer.WriteDouble(msg.horizontal);
+                writer.WriteDouble(msg.vertical);
+                CustomMessagingManager.SendNamedMessage("Input", null, stream, "customChannel");
+            }
+        }
+    }
 
     private void HandleReplicationMessage(ulong clientId, Stream stream)
     {
@@ -93,6 +108,9 @@ public class CustomNetworkManager : NetworkingManager
     public void RegisterServerNetworkHandlers()
     {
         // TODO
+
+        //Implementer le HandleInputMessage
+        CustomMessagingManager.RegisterNamedMessageHandler("Input", HandleInputMessage);
     }
 
 

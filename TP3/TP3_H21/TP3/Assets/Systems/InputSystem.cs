@@ -17,16 +17,33 @@ public class InputSystem : ISystem
             float horizontalMovement = Input.GetAxis("Horizontal");
             float verticalMovement = Input.GetAxis("Vertical");
 
-            const float speed = 5;
-
-            ComponentsManager.Instance.ForEach<PlayerComponent, ShapeComponent>((entityID, playerComponent, shapeComponent) => {
-
-                if (ECSManager.Instance.NetworkManager.LocalClientId == playerComponent.playerId) {
-
-                    shapeComponent.speed.x = horizontalMovement * speed * Time.deltaTime;
-                    shapeComponent.speed.y = verticalMovement * speed * Time.deltaTime;
-                    ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
+            ComponentsManager.Instance.ForEach<PlayerComponent>((entityID, playerComponent) =>
+            {
+                if (ECSManager.Instance.NetworkManager.LocalClientId == playerComponent.playerId)
+                {
+                    InputMessage msg = new InputMessage()
+                    {
+                        messageID = 0,
+                        timeCreated = Utils.SystemTime,
+                        entityId = entityID.id,
+                        horizontal = horizontalMovement,
+                        vertical = verticalMovement
+                    };
+                    ComponentsManager.Instance.SetComponent<InputMessage>(entityID, msg);
                 }
             });
-        }   }
+        }
+        else
+        {
+            ComponentsManager.Instance.ForEach<ShapeComponent, InputMessage>((entityID, shapeComponent, inputMessage) =>
+            {
+                const float speed = 5;
+                shapeComponent.speed.x = inputMessage.horizontal * speed * Time.deltaTime;
+                shapeComponent.speed.y = inputMessage.vertical * speed * Time.deltaTime;
+                ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
+            });
+
+            ComponentsManager.Instance.ClearComponents<InputMessage>();
+        }
+    }
 }
