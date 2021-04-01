@@ -37,13 +37,13 @@ public class InputSystem : ISystem
         {
             ComponentsManager.Instance.ForEach<ShapeComponent, InputMessage>((entityID, shapeComponent, inputMessage) =>
             {
-                const float speed = 5;
+                const float speed = 500;
                 shapeComponent.speed.x = inputMessage.horizontal * speed * Time.deltaTime;
                 shapeComponent.speed.y = inputMessage.vertical * speed * Time.deltaTime;
                 ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
             });
 
-            ComponentsManager.Instance.ClearComponents<InputMessage>();
+            //ComponentsManager.Instance.ClearComponents<InputMessage>();
         }
     }
 }

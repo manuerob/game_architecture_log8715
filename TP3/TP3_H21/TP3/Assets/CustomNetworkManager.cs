@@ -68,7 +68,7 @@ public class CustomNetworkManager : NetworkingManager
                 writer.WriteUInt32(msg.entityId);
                 writer.WriteDouble(msg.horizontal);
                 writer.WriteDouble(msg.vertical);
-                CustomMessagingManager.SendNamedMessage("Input", null, stream, "customChannel");
+                CustomMessagingManager.SendNamedMessage("Input", ServerClientId, stream, "customChannel");
             }
         }
     }
@@ -105,11 +105,36 @@ public class CustomNetworkManager : NetworkingManager
         CustomMessagingManager.RegisterNamedMessageHandler("Replication", HandleReplicationMessage);
     }
 
+    private void HandleInputMessage(ulong clientId, Stream stream)
+    {
+        InputMessage inputMessage = new InputMessage();
+        using (PooledBitReader reader = PooledBitReader.Get(stream))
+        {
+            inputMessage.messageID = reader.ReadInt32();
+            inputMessage.timeCreated = reader.ReadInt32();
+            inputMessage.entityId = reader.ReadUInt32();
+            inputMessage.horizontal = (float)reader.ReadDouble();
+            inputMessage.vertical = (float)reader.ReadDouble();
+            ComponentsManager.Instance.SetComponent<InputMessage>(inputMessage.entityId, inputMessage);
+
+            /*
+            if (!ComponentsManager.Instance.EntityContains<EntityComponent>(inputMessage.entityId))
+            {
+                bool spawnFound = ComponentsManager.Instance.TryGetComponent(new EntityComponent(0), out SpawnInfo spawnInfo);
+
+                if (!spawnFound)
+                {
+                    spawnInfo = new SpawnInfo(false);
+                }
+                spawnInfo.replicatedEntitiesToSpawn.Add(inputMessage);
+                ComponentsManager.Instance.SetComponent<SpawnInfo>(new EntityComponent(0), spawnInfo);
+            }
+            */
+        }
+    }
+
     public void RegisterServerNetworkHandlers()
     {
-        // TODO
-
-        //Implementer le HandleInputMessage
         CustomMessagingManager.RegisterNamedMessageHandler("Input", HandleInputMessage);
     }
 
