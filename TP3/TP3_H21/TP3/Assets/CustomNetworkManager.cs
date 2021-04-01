@@ -57,7 +57,7 @@ public class CustomNetworkManager : NetworkingManager
         }
     }
 
-    public void SendInputMessage(InputMessage msg)
+    public void SendInputMessage(InputMessage msg, bool sendToServer)
     {
         using (PooledBitStream stream = PooledBitStream.Get())
         {
@@ -68,7 +68,15 @@ public class CustomNetworkManager : NetworkingManager
                 writer.WriteUInt32(msg.entityId);
                 writer.WriteDouble(msg.horizontal);
                 writer.WriteDouble(msg.vertical);
-                CustomMessagingManager.SendNamedMessage("Input", ServerClientId, stream, "customChannel");
+
+                if (sendToServer)
+                {
+                    CustomMessagingManager.SendNamedMessage("Input", ServerClientId, stream, "customChannel");
+                }
+                else 
+                {
+                    CustomMessagingManager.SendNamedMessage("Input", msg.entityId, stream, "customChannel");
+                }
             }
         }
     }
@@ -117,22 +125,6 @@ public class CustomNetworkManager : NetworkingManager
             inputMessage.vertical = (float)reader.ReadDouble();
 
             ComponentsManager.Instance.AddToInputQueue(inputMessage);
-
-            //ComponentsManager.Instance.SetComponent<InputMessage>(inputMessage.entityId, inputMessage);
-
-            /*
-            if (!ComponentsManager.Instance.EntityContains<EntityComponent>(inputMessage.entityId))
-            {
-                bool spawnFound = ComponentsManager.Instance.TryGetComponent(new EntityComponent(0), out SpawnInfo spawnInfo);
-
-                if (!spawnFound)
-                {
-                    spawnInfo = new SpawnInfo(false);
-                }
-                spawnInfo.replicatedEntitiesToSpawn.Add(inputMessage);
-                ComponentsManager.Instance.SetComponent<SpawnInfo>(new EntityComponent(0), spawnInfo);
-            }
-            */
         }
     }
 
@@ -140,8 +132,6 @@ public class CustomNetworkManager : NetworkingManager
     {
         CustomMessagingManager.RegisterNamedMessageHandler("Input", HandleInputMessage);
     }
-
-
 
     public new bool isServer { get { return GetConnectionStatus() == ConnectionStatus.isServer; } }
     public new bool isClient { get { return GetConnectionStatus() == ConnectionStatus.isClient; } }

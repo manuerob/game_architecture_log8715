@@ -1,4 +1,6 @@
-﻿public class NetworkMessageSystem : ISystem
+﻿using UnityEngine;
+
+public class NetworkMessageSystem : ISystem
 {
     public string Name
     {
@@ -25,6 +27,11 @@
                 msg.messageID = messagingInfo.currentMessageId++;
                 ECSManager.Instance.NetworkManager.SendReplicationMessage(msg);
             });
+
+            ComponentsManager.Instance.ForEach<InputMessage>((entityID, msg) => {
+                msg.messageID = messagingInfo.currentMessageId++;
+                ECSManager.Instance.NetworkManager.SendInputMessage(msg, true);
+            });
         }
 
         if (ECSManager.Instance.NetworkManager.isClient)
@@ -32,8 +39,10 @@
             // TODO
             ComponentsManager.Instance.ForEach<InputMessage>((entityID, msg) => {
                 msg.messageID = messagingInfo.currentMessageId++;
-                ECSManager.Instance.NetworkManager.SendInputMessage(msg);
+                ECSManager.Instance.NetworkManager.SendInputMessage(msg, false);
+                
             });
+            
         }
 
         ComponentsManager.Instance.SetComponent<MessagingInfo>(new EntityComponent(0), messagingInfo);

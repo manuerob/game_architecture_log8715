@@ -16,13 +16,12 @@ public class RegisterSystems
         toRegister.Add(new CircleCollisionDetectionSystem());
         toRegister.Add(new BounceBackSystem());
         toRegister.Add(new InputSystem());
-        //toRegister.Add(new PositionUpdateSystem());
+        toRegister.Add(new PositionUpdateSystem());
         toRegister.Add(new ReplicationSystem());
         toRegister.Add(new NetworkMessageSystem());
         toRegister.Add(new ClearEndOfFrameComponentsSystem());
         toRegister.Add(new DisplayShapePositionSystem());
 
         return toRegister;
-
     }
 }

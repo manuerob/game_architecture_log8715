@@ -41,20 +41,43 @@ public class InputSystem : ISystem
 
                     // Ajout de msg dans l'historique
                     ComponentsManager.Instance.AddToInputHistory(msg);
+
+                    if (ComponentsManager.Instance.InputQueueCount > 0)
+                    {
+                        InputMessage responseMsg = ComponentsManager.Instance.GetFromInputQueue();
+                        InputMessage correspondingLocalMsg = ComponentsManager.Instance.GetFirstFromInputHistory();
+
+                        if ((responseMsg.pos - correspondingLocalMsg.pos).magnitude > (float.Epsilon * 10))
+                        {
+                            Debug.LogWarning("The history does not match the server. Must Reconcilitate.");
+                        }
+
+                        ComponentsManager.Instance.RemoveFirstFromInputHistory();
+                    }
                 }
             });
         }
         else
         {
-            if (ComponentsManager.Instance.InputQueueCount > 0)
+            while (ComponentsManager.Instance.InputQueueCount > 0)
             {
-                InputMessage msg = ComponentsManager.Instance.GetFromInputQueue();
+                InputMessage clientMsg = ComponentsManager.Instance.GetFromInputQueue();
 
-                ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msg.entityId);
-                component.pos.x += msg.horizontal * speed * Time.deltaTime;
-                component.pos.y += msg.vertical * speed * Time.deltaTime;
-                ComponentsManager.Instance.SetComponent<ShapeComponent>(msg.entityId, component);
+                ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientMsg.entityId);
+                component.pos.x += clientMsg.horizontal * speed * Time.deltaTime;
+                component.pos.y += clientMsg.vertical * speed * Time.deltaTime;
+                ComponentsManager.Instance.SetComponent<ShapeComponent>(clientMsg.entityId, component);
 
+                InputMessage responseMsg = new InputMessage()
+                {
+                    messageID = 0,
+                    timeCreated = Utils.SystemTime,
+                    entityId = clientMsg.entityId,
+                    horizontal = clientMsg.horizontal, // Pas nécessaire. À enlever?
+                    vertical = clientMsg.vertical,
+                    pos = component.pos // Envoi de la position attendue suite à l'input
+                };
+                ComponentsManager.Instance.SetComponent<InputMessage>(clientMsg.entityId, responseMsg);
             }
         }
     }

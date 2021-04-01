@@ -175,6 +175,16 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         _inputHistory.Add(msg);
     }
 
+    public InputMessage GetFirstFromInputHistory()
+    {
+        return _inputHistory[0];
+    }
+
+    public void RemoveFirstFromInputHistory()
+    {
+        _inputHistory.RemoveAt(0);
+    }
+
     public void AddToInputQueue(InputMessage msg)
     {
         _inputQueue.Enqueue(msg);
