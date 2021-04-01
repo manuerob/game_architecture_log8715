@@ -46,12 +46,16 @@ public class InputSystem : ISystem
         }
         else
         {
-            ComponentsManager.Instance.ForEach<ShapeComponent, InputMessage>((entityID, shapeComponent, inputMessage) =>
+            if (ComponentsManager.Instance.InputQueueCount > 0)
             {
-                shapeComponent.pos.x += inputMessage.horizontal * speed * Time.deltaTime;
-                shapeComponent.pos.y += inputMessage.vertical * speed * Time.deltaTime;
-                ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
-            });
+                InputMessage msg = ComponentsManager.Instance.GetFromInputQueue();
+
+                ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msg.entityId);
+                component.pos.x += msg.horizontal * speed * Time.deltaTime;
+                component.pos.y += msg.vertical * speed * Time.deltaTime;
+                ComponentsManager.Instance.SetComponent<ShapeComponent>(msg.entityId, component);
+
+            }
         }
     }
 }

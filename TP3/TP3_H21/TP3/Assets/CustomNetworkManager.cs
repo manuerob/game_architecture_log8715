@@ -115,7 +115,10 @@ public class CustomNetworkManager : NetworkingManager
             inputMessage.entityId = reader.ReadUInt32();
             inputMessage.horizontal = (float)reader.ReadDouble();
             inputMessage.vertical = (float)reader.ReadDouble();
-            ComponentsManager.Instance.SetComponent<InputMessage>(inputMessage.entityId, inputMessage);
+
+            ComponentsManager.Instance.AddToInputQueue(inputMessage);
+
+            //ComponentsManager.Instance.SetComponent<InputMessage>(inputMessage.entityId, inputMessage);
 
             /*
             if (!ComponentsManager.Instance.EntityContains<EntityComponent>(inputMessage.entityId))

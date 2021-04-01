@@ -36,6 +36,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
 
     private Dictionary<Type, Dictionary<uint, IComponent>> _allComponents = new Dictionary<Type, Dictionary<uint, IComponent>>();
     private List<InputMessage> _inputHistory = new List<InputMessage>();
+    private Queue<InputMessage> _inputQueue = new Queue<InputMessage>();
 
     public const int maxEntities = 2000;
 
@@ -172,5 +173,17 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     public void AddToInputHistory(InputMessage msg)
     {
         _inputHistory.Add(msg);
+    }
+
+    public void AddToInputQueue(InputMessage msg)
+    {
+        _inputQueue.Enqueue(msg);
+    }
+
+    public int InputQueueCount => _inputQueue.Count;
+
+    public InputMessage GetFromInputQueue()
+    {
+        return _inputQueue.Dequeue();
     }
 }
