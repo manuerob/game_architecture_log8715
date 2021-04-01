@@ -8,4 +8,5 @@ public struct InputMessage : IComponent
     public uint entityId;
     public float horizontal;
     public float vertical;
+    public Vector2 pos;
 }

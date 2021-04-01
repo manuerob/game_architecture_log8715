@@ -30,7 +30,6 @@
         if (ECSManager.Instance.NetworkManager.isClient)
         {
             // TODO
-
             ComponentsManager.Instance.ForEach<InputMessage>((entityID, msg) => {
                 msg.messageID = messagingInfo.currentMessageId++;
                 ECSManager.Instance.NetworkManager.SendInputMessage(msg);

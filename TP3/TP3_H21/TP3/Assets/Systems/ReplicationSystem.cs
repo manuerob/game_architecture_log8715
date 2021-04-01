@@ -63,10 +63,13 @@ public class ReplicationSystem : ISystem
             }
             else
             {
-                component.pos = msgReplication.pos;
-                component.speed = msgReplication.speed;
-                component.size = msgReplication.size;
-                ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
+                if (!ComponentsManager.Instance.EntityContains<PlayerComponent>(msgReplication.entityId))
+                {
+                    component.pos = msgReplication.pos;
+                    component.speed = msgReplication.speed;
+                    component.size = msgReplication.size;
+                    ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
+                }
             }
         });
     }

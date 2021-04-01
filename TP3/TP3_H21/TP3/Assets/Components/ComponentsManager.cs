@@ -35,6 +35,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     }
 
     private Dictionary<Type, Dictionary<uint, IComponent>> _allComponents = new Dictionary<Type, Dictionary<uint, IComponent>>();
+    private List<InputMessage> _inputHistory = new List<InputMessage>();
 
     public const int maxEntities = 2000;
 
@@ -166,5 +167,10 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     public Dictionary<Type, Dictionary<uint, IComponent>> DebugGetAllComponents()
     {
         return _allComponents;
+    }
+
+    public void AddToInputHistory(InputMessage msg)
+    {
+        _inputHistory.Add(msg);
     }
 }
