@@ -30,7 +30,7 @@ public class NetworkMessageSystem : ISystem
 
             ComponentsManager.Instance.ForEach<InputMessage>((entityID, msg) => {
                 msg.messageID = messagingInfo.currentMessageId++;
-                ECSManager.Instance.NetworkManager.SendInputMessage(msg, true);
+                ECSManager.Instance.NetworkManager.SendInputMessage(msg, false);
             });
         }
 
@@ -39,7 +39,7 @@ public class NetworkMessageSystem : ISystem
             // TODO
             ComponentsManager.Instance.ForEach<InputMessage>((entityID, msg) => {
                 msg.messageID = messagingInfo.currentMessageId++;
-                ECSManager.Instance.NetworkManager.SendInputMessage(msg, false);
+                ECSManager.Instance.NetworkManager.SendInputMessage(msg, true);
                 
             });
             

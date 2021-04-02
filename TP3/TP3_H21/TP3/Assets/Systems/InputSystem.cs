@@ -21,7 +21,8 @@ public class InputSystem : ISystem
 
             ComponentsManager.Instance.ForEach<PlayerComponent, ShapeComponent>((entityID, playerComponent, shapeComponent) =>
             {
-                if (ECSManager.Instance.NetworkManager.LocalClientId == playerComponent.playerId)
+                if (ECSManager.Instance.NetworkManager.LocalClientId == playerComponent.playerId
+                    && (Mathf.Abs(horizontal) > float.Epsilon || Mathf.Abs(vertical) > float.Epsilon))
                 {
                     // Prédiction client du déplacement
                     shapeComponent.pos.x += horizontal * speed * Time.deltaTime;

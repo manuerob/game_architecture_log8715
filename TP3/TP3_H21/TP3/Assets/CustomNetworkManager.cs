@@ -71,10 +71,12 @@ public class CustomNetworkManager : NetworkingManager
 
                 if (sendToServer)
                 {
+                    Debug.Log("Sending input from " + LocalClientId.ToString() + " to server " + ServerClientId.ToString());
                     CustomMessagingManager.SendNamedMessage("Input", ServerClientId, stream, "customChannel");
                 }
-                else 
+                else
                 {
+                    Debug.Log("Sending input from server to client " + msg.entityId.ToString());
                     CustomMessagingManager.SendNamedMessage("Input", msg.entityId, stream, "customChannel");
                 }
             }
@@ -125,6 +127,7 @@ public class CustomNetworkManager : NetworkingManager
             inputMessage.vertical = (float)reader.ReadDouble();
 
             ComponentsManager.Instance.AddToInputQueue(inputMessage);
+            Debug.Log("Adding input to queue from " + inputMessage.entityId.ToString() + " and from " + clientId.ToString());
         }
     }
 
