@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 // Il faudrait que ce système prenne les inputs, update la vitesse, ajoute un composant d'inputs (vertical et horizontal)
 // Ensuite, après un système qui met à jour la position, on aurait un autre système qui récupère le composant d'input pour créer le message
 public class InputMessageSystem : ISystem
 {
     const float playerSpeed = 200;
-    const float PLAYER_RECONCILIATION_THRESHOLD = 0.05f;
+    const float PLAYER_RECONCILIATION_THRESHOLD = 0.5f;
 
     public string Name
     {
@@ -98,18 +99,13 @@ public class InputMessageSystem : ISystem
             if (ComponentsManager.Instance.InputQueueCount > 0)
             {
                 InputMessage responseMsg = ComponentsManager.Instance.GetFromInputQueue();
-                InputMessage correspondingLocalMsg = ComponentsManager.Instance.GetFirstFromInputHistory();
-
+                
                 var history = ComponentsManager.Instance.DebugGetInputHistory();
                 var queue = ComponentsManager.Instance.DebugGetInputQueue();
-                var matches = history.Select(x => x.horizontal == responseMsg.horizontal && x.vertical == responseMsg.vertical).ToList();
+                int matchIndex = history.FindIndex(x => x.horizontal == responseMsg.horizontal && x.vertical == responseMsg.vertical);
+                history.RemoveRange(0, matchIndex);
 
-                if (matches.Count > 0)
-                {
-                    Debug.Log("There is a match in the history");
-                }
-
-
+                InputMessage correspondingLocalMsg = ComponentsManager.Instance.GetFirstFromInputHistory();
 
                 if ((responseMsg.pos - correspondingLocalMsg.pos).magnitude > PLAYER_RECONCILIATION_THRESHOLD)
                 {
