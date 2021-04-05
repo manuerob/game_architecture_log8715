@@ -6,6 +6,7 @@ public struct InputMessage : IComponent
     public int timeCreated;
 
     public uint entityId;
+    public uint inputId;
     public ulong senderId;
     public float horizontal;
     public float vertical;

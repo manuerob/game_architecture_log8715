@@ -66,6 +66,7 @@ public class CustomNetworkManager : NetworkingManager
                 writer.WriteInt32(msg.messageID);
                 writer.WriteInt32(msg.timeCreated);
                 writer.WriteUInt32(msg.entityId);
+                writer.WriteUInt32(msg.inputId);
                 writer.WriteUInt64(msg.senderId);
                 writer.WriteDouble(msg.horizontal);
                 writer.WriteDouble(msg.vertical);
@@ -127,6 +128,7 @@ public class CustomNetworkManager : NetworkingManager
             inputMessage.messageID = reader.ReadInt32();
             inputMessage.timeCreated = reader.ReadInt32();
             inputMessage.entityId = reader.ReadUInt32();
+            inputMessage.inputId = reader.ReadUInt32();
             inputMessage.senderId = reader.ReadUInt64();
             inputMessage.horizontal = (float)reader.ReadDouble();
             inputMessage.vertical = (float)reader.ReadDouble();

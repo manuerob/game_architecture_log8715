@@ -2,12 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 
-// Il faudrait que ce système prenne les inputs, update la vitesse, ajoute un composant d'inputs (vertical et horizontal)
-// Ensuite, après un système qui met à jour la position, on aurait un autre système qui récupère le composant d'input pour créer le message
 public class InputMessageSystem : ISystem
 {
     const float playerSpeed = 200;
-    const float PLAYER_RECONCILIATION_THRESHOLD = 0.5f;
 
     public string Name
     {
@@ -66,6 +63,7 @@ public class InputMessageSystem : ISystem
                     timeCreated = Utils.SystemTime,
                     entityId = clientMsg.entityId,
                     senderId = clientMsg.senderId,
+                    inputId = clientMsg.inputId,
                     horizontal = clientMsg.horizontal, // Pas nécessaire. À enlever?
                     vertical = clientMsg.vertical,
                     speed = component.speed, // Envoi de la vitesse attendue suite à l'input
@@ -85,6 +83,7 @@ public class InputMessageSystem : ISystem
                 messageID = 0,
                 timeCreated = Utils.SystemTime,
                 entityId = entityID.id,
+                inputId = ComponentsManager.Instance.GetInputId,
                 senderId = ECSManager.Instance.NetworkManager.LocalClientId,
                 horizontal = inputComponent.horizontal, // Envoi de l'input fait
                 vertical = inputComponent.vertical,
@@ -95,40 +94,6 @@ public class InputMessageSystem : ISystem
 
             // Ajout de msg dans l'historique 
             ComponentsManager.Instance.AddToInputHistory(msg);
-
-            if (ComponentsManager.Instance.InputQueueCount > 0)
-            {
-                InputMessage responseMsg = ComponentsManager.Instance.GetFromInputQueue();
-                
-                var history = ComponentsManager.Instance.DebugGetInputHistory();
-                var queue = ComponentsManager.Instance.DebugGetInputQueue();
-                int matchIndex = history.FindIndex(x => x.horizontal == responseMsg.horizontal && x.vertical == responseMsg.vertical);
-                history.RemoveRange(0, matchIndex);
-
-                InputMessage correspondingLocalMsg = ComponentsManager.Instance.GetFirstFromInputHistory();
-
-                if ((responseMsg.pos - correspondingLocalMsg.pos).magnitude > PLAYER_RECONCILIATION_THRESHOLD)
-                {
-                    Debug.Log("The history does not match the server. Must Reconcilitate.");
-
-                }
-
-                ComponentsManager.Instance.RemoveFirstFromInputHistory();
-
-                // On vient de recevoir le plus vieux dans l'historique en retour du serveur.
-                // On sait le temps quand le serveur l'a créé et on sait le temps quand nous on l'a créé
-                // La différence de temps est le délai entre le serveur et le client.
-
-                // On peut set un component pour contenir ce temps là et quand on extrapole on
-                //   doit deviner selon le serveur les objets sont où. Quand un objet bouge, 
-                //   on doit add le décalage selon la vitesse.
-
-                // (Problème: on est conscient du décalage seulement lorsque l'on bouge...
-                //   Autrement, le délai est celui de la dernière fois qu'on a bougé.
-                //   Il faudrait faire un type de message comme le input mais qu'on envoie en 
-                //   continue entre le serveur et le client pour toujours avoir le délai, 
-                //   pour pas que la valeur connue du délai dépende d'une feature.)
-            }
         }
     }
 }

@@ -212,4 +212,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     {
         return _inputQueue.Dequeue();
     }
+
+    static uint inputMessageCount = 0;
+    public uint GetInputId => inputMessageCount++;
 }
