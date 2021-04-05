@@ -77,6 +77,7 @@ public class ECSManager : MonoBehaviour {
     private void Awake()
     {
         _allSystems = RegisterSystems.GetListOfSystems();
+        Screen.SetResolution(1024, 768, false);
     }
 
     #endregion

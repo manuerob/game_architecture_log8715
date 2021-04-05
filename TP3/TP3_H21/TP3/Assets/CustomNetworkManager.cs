@@ -66,8 +66,11 @@ public class CustomNetworkManager : NetworkingManager
                 writer.WriteInt32(msg.messageID);
                 writer.WriteInt32(msg.timeCreated);
                 writer.WriteUInt32(msg.entityId);
+                writer.WriteUInt64(msg.senderId);
                 writer.WriteDouble(msg.horizontal);
                 writer.WriteDouble(msg.vertical);
+                writer.WriteVector2(msg.pos);
+                writer.WriteVector2(msg.speed);
 
                 if (sendToServer)
                 {
@@ -77,7 +80,7 @@ public class CustomNetworkManager : NetworkingManager
                 else
                 {
                     Debug.Log("Sending input from server to client " + msg.entityId.ToString());
-                    CustomMessagingManager.SendNamedMessage("Input", msg.entityId, stream, "customChannel");
+                    CustomMessagingManager.SendNamedMessage("Input", msg.senderId, stream, "customChannel");
                 }
             }
         }
@@ -113,6 +116,7 @@ public class CustomNetworkManager : NetworkingManager
     public void RegisterClientNetworkHandlers()
     {
         CustomMessagingManager.RegisterNamedMessageHandler("Replication", HandleReplicationMessage);
+        CustomMessagingManager.RegisterNamedMessageHandler("Input", HandleInputMessage);
     }
 
     private void HandleInputMessage(ulong clientId, Stream stream)
@@ -123,11 +127,14 @@ public class CustomNetworkManager : NetworkingManager
             inputMessage.messageID = reader.ReadInt32();
             inputMessage.timeCreated = reader.ReadInt32();
             inputMessage.entityId = reader.ReadUInt32();
+            inputMessage.senderId = reader.ReadUInt64();
             inputMessage.horizontal = (float)reader.ReadDouble();
             inputMessage.vertical = (float)reader.ReadDouble();
+            inputMessage.pos = reader.ReadVector2();
+            inputMessage.speed = reader.ReadVector2();
 
             ComponentsManager.Instance.AddToInputQueue(inputMessage);
-            Debug.Log("Adding input to queue from " + inputMessage.entityId.ToString() + " and from " + clientId.ToString());
+            Debug.Log("Adding input to queue from " + inputMessage.senderId.ToString() + " and from " + clientId.ToString());
         }
     }
 

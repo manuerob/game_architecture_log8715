@@ -170,6 +170,16 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         return _allComponents;
     }
 
+    public List<InputMessage> DebugGetInputHistory()
+    {
+        return _inputHistory;
+    }
+
+    public Queue<InputMessage> DebugGetInputQueue()
+    {
+        return _inputQueue;
+    }
+
     public void AddToInputHistory(InputMessage msg)
     {
         _inputHistory.Add(msg);
@@ -178,6 +188,11 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     public InputMessage GetFirstFromInputHistory()
     {
         return _inputHistory[0];
+    }
+
+    public InputMessage GetLastFromInputHistory()
+    {
+        return _inputHistory[_inputHistory.Count - 1];
     }
 
     public void RemoveFirstFromInputHistory()
@@ -191,6 +206,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     }
 
     public int InputQueueCount => _inputQueue.Count;
+    public int InputHistoryCount => _inputHistory.Count;
 
     public InputMessage GetFromInputQueue()
     {
