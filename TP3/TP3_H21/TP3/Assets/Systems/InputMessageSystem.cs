@@ -48,29 +48,33 @@ public class InputMessageSystem : ISystem
         }
         else
         {
-            while (ComponentsManager.Instance.InputQueueCount > 0)
+            ComponentsManager.Instance.ForEach<PlayerComponent>((entityID, playerComponent) =>
             {
-                InputMessage clientMsg = ComponentsManager.Instance.GetFromInputQueue();
-
-                ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientMsg.entityId);
-                component.speed.x = clientMsg.horizontal * playerSpeed * Time.deltaTime;
-                component.speed.y = clientMsg.vertical * playerSpeed * Time.deltaTime;
-                ComponentsManager.Instance.SetComponent<ShapeComponent>(clientMsg.entityId, component);
-
-                InputMessage responseMsg = new InputMessage()
+                if (ComponentsManager.Instance.InputQueueCount > 0
+                    && ComponentsManager.Instance.InputQueueContainsEntity(entityID))
                 {
-                    messageID = 0,
-                    timeCreated = Utils.SystemTime,
-                    entityId = clientMsg.entityId,
-                    senderId = clientMsg.senderId,
-                    inputId = clientMsg.inputId,
-                    horizontal = clientMsg.horizontal, // Pas nécessaire. À enlever?
-                    vertical = clientMsg.vertical,
-                    speed = component.speed, // Envoi de la vitesse attendue suite à l'input
-                    pos = component.pos // Envoi de la position attendue suite à l'input
-                };
-                ComponentsManager.Instance.SetComponent<InputMessage>(clientMsg.entityId, responseMsg);
-            }
+                    InputMessage clientMsg = ComponentsManager.Instance.GetFromInputQueue(entityID);
+
+                    ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientMsg.entityId);
+                    component.speed.x = clientMsg.horizontal * playerSpeed * Time.deltaTime;
+                    component.speed.y = clientMsg.vertical * playerSpeed * Time.deltaTime;
+                    ComponentsManager.Instance.SetComponent<ShapeComponent>(clientMsg.entityId, component);
+
+                    InputMessage responseMsg = new InputMessage()
+                    {
+                        messageID = 0,
+                        timeCreated = Utils.SystemTime,
+                        entityId = clientMsg.entityId,
+                        senderId = clientMsg.senderId,
+                        inputId = clientMsg.inputId,
+                        horizontal = clientMsg.horizontal, // Pas nécessaire. À enlever?
+                        vertical = clientMsg.vertical,
+                        speed = component.speed, // Envoi de la vitesse attendue suite à l'input
+                        pos = component.pos // Envoi de la position attendue suite à l'input
+                    };
+                    ComponentsManager.Instance.SetComponent<InputMessage>(clientMsg.entityId, responseMsg);
+                }
+            });
         }
     }
 

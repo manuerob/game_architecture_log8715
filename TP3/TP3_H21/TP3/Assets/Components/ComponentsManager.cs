@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Singleton<V> where V : new()
 {
@@ -36,9 +37,13 @@ internal class ComponentsManager : Singleton<ComponentsManager>
 
     private Dictionary<Type, Dictionary<uint, IComponent>> _allComponents = new Dictionary<Type, Dictionary<uint, IComponent>>();
     private List<InputMessage> _inputHistory = new List<InputMessage>();
-    private Queue<InputMessage> _inputQueue = new Queue<InputMessage>();
+    private List<DelayMessage> _delayHistory = new List<DelayMessage>();
+    private List<InputMessage> _inputQueue = new List<InputMessage>();
+    private List<DelayMessage> _delayQueue = new List<DelayMessage>();
 
     public const int maxEntities = 2000;
+
+    public int delayMs = 0;
 
     public void DebugPrint()
     {
@@ -170,12 +175,17 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         return _allComponents;
     }
 
-    public List<InputMessage> DebugGetInputHistory()
+    public List<InputMessage> GetInputHistory()
     {
         return _inputHistory;
     }
 
-    public Queue<InputMessage> DebugGetInputQueue()
+    public List<DelayMessage> GetDelayHistory()
+    {
+        return _delayHistory;
+    }
+
+    public List<InputMessage> DebugGetInputQueue()
     {
         return _inputQueue;
     }
@@ -184,10 +194,20 @@ internal class ComponentsManager : Singleton<ComponentsManager>
     {
         _inputHistory.Add(msg);
     }
+    
+    public void AddToDelayHistory(DelayMessage msg)
+    {
+        _delayHistory.Add(msg);
+    }
 
     public InputMessage GetFirstFromInputHistory()
     {
         return _inputHistory[0];
+    }
+
+    public DelayMessage GetFirstFromDelayHistory()
+    {
+        return _delayHistory[0];
     }
 
     public InputMessage GetLastFromInputHistory()
@@ -200,19 +220,72 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         _inputHistory.RemoveAt(0);
     }
 
+    public void RemoveFirstFromDelayHistory()
+    {
+        _delayHistory.RemoveAt(0);
+    }
+
     public void AddToInputQueue(InputMessage msg)
     {
-        _inputQueue.Enqueue(msg);
+        _inputQueue.Add(msg);
+    }
+
+    public void AddToDelayQueue(DelayMessage msg)
+    {
+        _delayQueue.Add(msg);
     }
 
     public int InputQueueCount => _inputQueue.Count;
+    public int DelayQueueCount => _delayQueue.Count;
     public int InputHistoryCount => _inputHistory.Count;
+    public int DelayHistoryCount => _delayHistory.Count;
 
     public InputMessage GetFromInputQueue()
     {
-        return _inputQueue.Dequeue();
+        InputMessage msg = _inputQueue[0];
+        _inputQueue.RemoveAt(0);
+
+        return msg;
+    }
+
+    public bool InputQueueContainsEntity(uint entityId)
+    { 
+        return _inputQueue.FindIndex(x => x.entityId == entityId) > 0;
+    }
+
+    public bool DelayQueueContainsEntity(uint entityId)
+    {
+        return _delayQueue.FindIndex(x => x.entityId == entityId) > 0;
+    }
+
+    public InputMessage GetFromInputQueue(uint entityId)
+    {
+        int index = _inputQueue.FindIndex(x => x.entityId == entityId);
+        InputMessage msg = _inputQueue[index];
+        _inputQueue.RemoveAt(index);
+
+        return msg;
+    }    
+    
+    public DelayMessage GetFromDelayQueue()
+    {
+        DelayMessage msg = _delayQueue[0];
+        _delayQueue.RemoveAt(0);
+
+        return msg;
+    }
+
+    public DelayMessage GetFromDelayQueue(uint entityId)
+    {
+        int index = _delayQueue.FindIndex(x => x.entityId == entityId);
+        DelayMessage msg = _delayQueue[index];
+        _delayQueue.RemoveAt(index);
+
+        return msg;
     }
 
     static uint inputMessageCount = 0;
+    static uint delayMessageCount = 0;
     public uint GetInputId => inputMessageCount++;
+    public uint GetDelayMessageId => delayMessageCount++;
 }

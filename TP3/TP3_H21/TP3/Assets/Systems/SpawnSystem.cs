@@ -102,6 +102,7 @@ public class SpawnSystem : ISystem
         entityConfig.size = shapeData.size;
         entityConfig.initialPos = shapeData.pos;
         SpawnEntity(playerId, new Vector2(), entityConfig);
+        Debug.Log("Player Component created");
         PlayerComponent playerComponent = new PlayerComponent() { playerId = playerId };
         ComponentsManager.Instance.SetComponent<PlayerComponent>(playerId, playerComponent);
     }

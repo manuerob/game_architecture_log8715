@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class PlayerReconciliationSystem : ISystem
 {
-    const float PLAYER_RECONCILIATION_THRESHOLD = 0.5f;
+    const float PLAYER_RECONCILIATION_THRESHOLD = 0.05f;
 
     public string Name
     {
@@ -56,44 +56,37 @@ public class PlayerReconciliationSystem : ISystem
             {
                 InputMessage responseMsg = ComponentsManager.Instance.GetFromInputQueue();
                 
-                var history = ComponentsManager.Instance.DebugGetInputHistory();
+                var history = ComponentsManager.Instance.GetInputHistory();
                 int matchIndex = history.FindIndex(x => x.inputId == responseMsg.inputId);
-                history.RemoveRange(0, matchIndex);
 
-                InputMessage correspondingLocalMsg = ComponentsManager.Instance.GetFirstFromInputHistory();
-
-                if ((responseMsg.pos - correspondingLocalMsg.pos).magnitude > PLAYER_RECONCILIATION_THRESHOLD)
+                if (matchIndex > 0)
                 {
-                    
-                    while (ComponentsManager.Instance.InputQueueCount > 0)
+                    history.RemoveRange(0, matchIndex);
+
+                    InputMessage correspondingLocalMsg = ComponentsManager.Instance.GetFirstFromInputHistory();
+
+                    if ((responseMsg.pos - correspondingLocalMsg.pos).magnitude > PLAYER_RECONCILIATION_THRESHOLD)
                     {
-                        Debug.Log("The history does not match the server. Must Reconcilitate.");
-                        shapeComponent.pos = responseMsg.pos;
-                        foreach (var input in history)
+                        while (ComponentsManager.Instance.InputQueueCount > 0)
                         {
-                            shapeComponent.speed.x = input.horizontal * 200 * Time.deltaTime;
-                            shapeComponent.speed.y = input.vertical * 200 * Time.deltaTime;
-                            shapeComponent.pos = PositionUpdateSystem.GetNewPosition(shapeComponent.pos, shapeComponent.speed);
+                            Debug.Log("The history does not match the server. Must Reconcilitate.");
+                            shapeComponent.pos = responseMsg.pos;
+                            foreach (var input in history)
+                            {
+                                shapeComponent.speed.x = input.horizontal * 200 * Time.deltaTime;
+                                shapeComponent.speed.y = input.vertical * 200 * Time.deltaTime;
+                                shapeComponent.pos = PositionUpdateSystem.GetNewPosition(shapeComponent.pos, shapeComponent.speed);
+                            }
+                            responseMsg = ComponentsManager.Instance.GetFromInputQueue();
+                            ComponentsManager.Instance.RemoveFirstFromInputHistory();
                         }
-                        responseMsg = ComponentsManager.Instance.GetFromInputQueue();
+                        ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
+                    }
+                    else
+                    {
                         ComponentsManager.Instance.RemoveFirstFromInputHistory();
                     }
-                    /*
-                    Debug.Log("The history does not match the server. Must Reconcilitate.");
-                    shapeComponent.pos = responseMsg.pos;
-                    foreach (var input in history)
-                    {
-                        shapeComponent.speed.x = input.horizontal * 200 * Time.deltaTime;
-                        shapeComponent.speed.y = input.vertical * 200 * Time.deltaTime;
-                        shapeComponent.pos = PositionUpdateSystem.GetNewPosition(shapeComponent.pos, shapeComponent.speed);
-                    }*/
-                    ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
                 }
-                else
-                {
-                    ComponentsManager.Instance.RemoveFirstFromInputHistory();
-                }
-
                 
 
                 // On vient de recevoir le plus vieux dans l'historique en retour du serveur.

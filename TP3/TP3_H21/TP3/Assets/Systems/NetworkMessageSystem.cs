@@ -32,6 +32,11 @@ public class NetworkMessageSystem : ISystem
                 msg.messageID = messagingInfo.currentMessageId++;
                 ECSManager.Instance.NetworkManager.SendInputMessage(msg, false);
             });
+
+            ComponentsManager.Instance.ForEach<DelayMessage>((entityID, msg) => {
+                msg.messageID = messagingInfo.currentMessageId++;
+                ECSManager.Instance.NetworkManager.SendDelayMessage(msg, false);
+            });
         }
 
         if (ECSManager.Instance.NetworkManager.isClient)
@@ -40,9 +45,13 @@ public class NetworkMessageSystem : ISystem
             ComponentsManager.Instance.ForEach<InputMessage>((entityID, msg) => {
                 msg.messageID = messagingInfo.currentMessageId++;
                 ECSManager.Instance.NetworkManager.SendInputMessage(msg, true);
-                
             });
-            
+
+            ComponentsManager.Instance.ForEach<DelayMessage>((entityID, msg) => {
+                msg.messageID = messagingInfo.currentMessageId++;
+                ECSManager.Instance.NetworkManager.SendDelayMessage(msg, true);
+            });
+
         }
 
         ComponentsManager.Instance.SetComponent<MessagingInfo>(new EntityComponent(0), messagingInfo);

@@ -15,6 +15,7 @@ public class ClearEndOfFrameComponentsSystem : ISystem
     {
         ComponentsManager.Instance.ClearComponents<ReplicationMessage>();
         ComponentsManager.Instance.ClearComponents<InputMessage>();
+        ComponentsManager.Instance.ClearComponents<DelayMessage>();
         ComponentsManager.Instance.ClearComponents<CollisionEventComponent>();
     }
 }

@@ -87,6 +87,32 @@ public class CustomNetworkManager : NetworkingManager
         }
     }
 
+    public void SendDelayMessage(DelayMessage msg, bool sendToServer)
+    {
+        using (PooledBitStream stream = PooledBitStream.Get())
+        {
+            using (PooledBitWriter writer = PooledBitWriter.Get(stream))
+            {
+                writer.WriteInt32(msg.messageID);
+                writer.WriteInt32(msg.timeCreated);
+                writer.WriteUInt32(msg.entityId);
+                writer.WriteUInt32(msg.delayMessageId);
+                writer.WriteUInt64(msg.senderId);
+
+                if (sendToServer)
+                {
+                    Debug.Log("Sending input from " + LocalClientId.ToString() + " to server " + ServerClientId.ToString());
+                    CustomMessagingManager.SendNamedMessage("Delay", ServerClientId, stream, "customChannel");
+                }
+                else
+                {
+                    Debug.Log("Sending input from server to client " + msg.entityId.ToString());
+                    CustomMessagingManager.SendNamedMessage("Delay", msg.senderId, stream, "customChannel");
+                }
+            }
+        }
+    }
+
     private void HandleReplicationMessage(ulong clientId, Stream stream)
     {
         ReplicationMessage replicationMessage = new ReplicationMessage();
@@ -118,6 +144,7 @@ public class CustomNetworkManager : NetworkingManager
     {
         CustomMessagingManager.RegisterNamedMessageHandler("Replication", HandleReplicationMessage);
         CustomMessagingManager.RegisterNamedMessageHandler("Input", HandleInputMessage);
+        CustomMessagingManager.RegisterNamedMessageHandler("Delay", HandleDelayMessage);
     }
 
     private void HandleInputMessage(ulong clientId, Stream stream)
@@ -136,13 +163,29 @@ public class CustomNetworkManager : NetworkingManager
             inputMessage.speed = reader.ReadVector2();
 
             ComponentsManager.Instance.AddToInputQueue(inputMessage);
-            Debug.Log("Adding input to queue from " + inputMessage.senderId.ToString() + " and from " + clientId.ToString());
+            Debug.Log("Adding input to queue from client " + inputMessage.senderId.ToString());
+        }
+    }
+
+    private void HandleDelayMessage(ulong clientId, Stream stream)
+    {
+        DelayMessage delayMessage = new DelayMessage();
+        using (PooledBitReader reader = PooledBitReader.Get(stream))
+        {
+            delayMessage.messageID = reader.ReadInt32();
+            delayMessage.timeCreated = reader.ReadInt32();
+            delayMessage.entityId = reader.ReadUInt32();
+            delayMessage.delayMessageId = reader.ReadUInt32();
+            delayMessage.senderId = reader.ReadUInt64();
+
+            ComponentsManager.Instance.AddToDelayQueue(delayMessage);
         }
     }
 
     public void RegisterServerNetworkHandlers()
     {
         CustomMessagingManager.RegisterNamedMessageHandler("Input", HandleInputMessage);
+        CustomMessagingManager.RegisterNamedMessageHandler("Delay", HandleDelayMessage);
     }
 
     public new bool isServer { get { return GetConnectionStatus() == ConnectionStatus.isServer; } }
