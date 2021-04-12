@@ -24,10 +24,13 @@ public class InputSystem : ISystem
                 if (ECSManager.Instance.NetworkManager.LocalClientId == playerComponent.playerId)
                 {
                     // Prédiction client du déplacement
-                    shapeComponent.speed.x = horizontal * speed * Time.deltaTime;
-                    shapeComponent.speed.y = vertical * speed * Time.deltaTime;
-                    ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
-
+                    if (ECSManager.Instance.Config.enableInputPrediction)
+                    { 
+                        shapeComponent.speed.x = horizontal * speed * Time.deltaTime;
+                        shapeComponent.speed.y = vertical * speed * Time.deltaTime;
+                        ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
+                    }
+                    
                     bool hasInputComponent = ComponentsManager.Instance.TryGetComponent(entityID, out InputComponent inputs);
                     if (hasInputComponent)
                     {

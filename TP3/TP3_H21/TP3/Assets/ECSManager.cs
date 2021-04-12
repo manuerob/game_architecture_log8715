@@ -90,7 +90,6 @@ public class ECSManager : MonoBehaviour {
 
     private void Awake()
     {
-        Time.fixedDeltaTime = 0.02f;
         _allSystems = RegisterSystems.GetListOfSystems();
         _extrapolatedSystems = RegisterSystems.GetListOfExtrapolatedSystems();
         Screen.SetResolution(1024, 768, false);

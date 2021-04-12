@@ -68,7 +68,6 @@ public class PlayerReconciliationSystem : ISystem
 
                 if ((responseMsg.pos - correspondingLocalMsg.pos).magnitude > PLAYER_RECONCILIATION_THRESHOLD)
                 {
-                    
                     while (ComponentsManager.Instance.InputQueueCount > 0)
                     {
                         Debug.Log("The history does not match the server. Must Reconcilitate.");

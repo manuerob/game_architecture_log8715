@@ -6,7 +6,7 @@ public class ExtrapolationSystem : ISystem
 
     public void UpdateSystem()
     {
-        if (ECSManager.Instance.NetworkManager.IsClient && !ECSManager.Instance.NetworkManager.IsServer)
+        if (ECSManager.Instance.NetworkManager.IsClient && !ECSManager.Instance.NetworkManager.IsServer && ECSManager.Instance.Config.enableDeadReckoning)
         {
             // calculate the number of frames to compute
             ulong rttMilliseconds = ECSManager.Instance.GetCurrentRtt();

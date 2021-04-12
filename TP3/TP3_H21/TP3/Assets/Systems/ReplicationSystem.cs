@@ -63,7 +63,7 @@ public class ReplicationSystem : ISystem
             }
             else
             {
-                if (!ComponentsManager.Instance.EntityContains<PlayerComponent>(msgReplication.entityId))
+                if (!ComponentsManager.Instance.EntityContains<PlayerComponent>(msgReplication.entityId) || !ECSManager.Instance.Config.enableInputPrediction)
                 {
                     component.pos = msgReplication.pos;
                     component.speed = msgReplication.speed;
