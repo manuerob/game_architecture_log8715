@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PositionUpdateSystem : ISystem {
+public class PositionUpdateSystem : IExtrapolatableSystem
+{
     public string Name
     {
         get
@@ -49,6 +50,21 @@ public class PositionUpdateSystem : ISystem {
     {
         var newPosition = position + speed * deltaTime;
         return newPosition;
+    }
+
+    public void ExtrapolateEntities()
+    {
+        if (ECSManager.Instance.NetworkManager.IsClient && !ECSManager.Instance.NetworkManager.IsServer)
+        {
+            ComponentsManager.Instance.ForEach<ShapeComponent, ReplicationMessage>((entityID, shapeComponent, replicationMessage) =>
+            {
+                if (!ComponentsManager.Instance.EntityContains<PlayerComponent>(entityID))
+                {
+                    shapeComponent.pos = GetNewPosition(shapeComponent.pos, shapeComponent.speed, Time.deltaTime);
+                    ComponentsManager.Instance.SetComponent<ShapeComponent>(entityID, shapeComponent);
+                }
+            });
+        }
     }
 }
 

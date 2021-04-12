@@ -44,9 +44,9 @@ public class RegisterSystems
         return toRegister;
     }
 
-    public static List<ISystem> GetListOfExtrapolatedSystems()
+    public static List<IExtrapolatableSystem> GetListOfExtrapolatedSystems()
     {
-        List<ISystem> toRegister = new List<ISystem>();
+        List<IExtrapolatableSystem> toRegister = new List<IExtrapolatableSystem>();
 
         toRegister.Add(new WallCollisionDetectionSystem());
         toRegister.Add(new CircleCollisionDetectionSystem());

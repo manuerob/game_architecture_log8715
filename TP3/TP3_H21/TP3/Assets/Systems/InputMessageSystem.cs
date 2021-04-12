@@ -26,6 +26,8 @@ public class InputMessageSystem : ISystem
         {
             ComponentsManager.Instance.ForEach<PlayerComponent, ShapeComponent, InputComponent>((entityID, playerComponent, shapeComponent, inputComponent) =>
             {
+                SendInputMessage(entityID, playerComponent, shapeComponent, inputComponent);
+                /*
                 if (ComponentsManager.Instance.InputHistoryCount > 0)
                 {
                     if (IsLastInputSentZero())
@@ -43,7 +45,7 @@ public class InputMessageSystem : ISystem
                 else 
                 {
                     SendInputMessage(entityID, playerComponent, shapeComponent, inputComponent);
-                }
+                }*/
             });
         }
         else

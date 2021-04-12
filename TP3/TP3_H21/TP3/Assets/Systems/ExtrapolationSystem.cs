@@ -10,9 +10,8 @@ public class ExtrapolationSystem : ISystem
         {
             // calculate the number of frames to compute
             ulong rttMilliseconds = ECSManager.Instance.GetCurrentRtt();
-            
-
-            int amoutOfFramesToExtrapolate = (int)(((rttMilliseconds / 2f) / 1000) / Time.deltaTime);
+            Debug.Log("RTT = " + rttMilliseconds);
+            int amoutOfFramesToExtrapolate = (int)(((rttMilliseconds) / 1000f) / Time.deltaTime);
 
             Debug.Log("Frames to extrapolate = " + amoutOfFramesToExtrapolate);
 

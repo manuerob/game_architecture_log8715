@@ -69,13 +69,13 @@ public class ECSManager : MonoBehaviour {
 
     #region System Management
     private List<ISystem> _allSystems = new List<ISystem>();
-    private List<ISystem> _extrapolatedSystems = new List<ISystem>();
+    private List<IExtrapolatableSystem> _extrapolatedSystems = new List<IExtrapolatableSystem>();
 
     public void UpdateExtrapolatedSystems()
     {
         foreach (var system in _extrapolatedSystems)
         {
-            system.UpdateSystem();
+            system.ExtrapolateEntities();
         }
     }
 
@@ -90,6 +90,7 @@ public class ECSManager : MonoBehaviour {
 
     private void Awake()
     {
+        Time.fixedDeltaTime = 0.02f;
         _allSystems = RegisterSystems.GetListOfSystems();
         _extrapolatedSystems = RegisterSystems.GetListOfExtrapolatedSystems();
         Screen.SetResolution(1024, 768, false);
@@ -137,6 +138,11 @@ public interface ISystem
 {
     void UpdateSystem();
     string Name { get; }
+}
+
+public interface IExtrapolatableSystem : ISystem
+{
+    void ExtrapolateEntities();
 }
 
 public interface IComponent

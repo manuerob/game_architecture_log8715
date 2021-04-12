@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class PlayerReconciliationSystem : ISystem
 {
-    const float PLAYER_RECONCILIATION_THRESHOLD = 0.5f;
+    const float PLAYER_RECONCILIATION_THRESHOLD = 0;//0.05f;
 
     public string Name
     {
@@ -26,6 +26,9 @@ public class PlayerReconciliationSystem : ISystem
         {
             ComponentsManager.Instance.ForEach<PlayerComponent, ShapeComponent, InputComponent>((entityID, playerComponent, shapeComponent, inputComponent) =>
             {
+
+                TryReconciliation(entityID, playerComponent, shapeComponent, inputComponent);
+                /*
                 if (ComponentsManager.Instance.InputHistoryCount > 0)
                 {
                     if (IsLastInputSentZero())
@@ -44,6 +47,7 @@ public class PlayerReconciliationSystem : ISystem
                 {
                     TryReconciliation(entityID, playerComponent, shapeComponent, inputComponent);
                 }
+                */
             });
         }
     }
