@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 
-// Il faudrait que ce système prenne les inputs, update la vitesse, ajoute un composant d'inputs (vertical et horizontal)
-// Ensuite, après un système qui met à jour la position, on aurait un autre système qui récupère le composant d'input pour créer le message
 public class InputSystem : ISystem
 {
     const float speed = 200;

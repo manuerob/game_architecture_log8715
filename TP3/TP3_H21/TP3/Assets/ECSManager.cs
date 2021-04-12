@@ -60,10 +60,24 @@ public class ECSManager : MonoBehaviour {
         _gameObjectsForDisplay[id].transform.localScale = Vector2.one * size;
     }
 
+    public ulong GetCurrentRtt()
+    { 
+        return NetworkManager.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.LocalClientId);
+    }
+
     #endregion
 
     #region System Management
     private List<ISystem> _allSystems = new List<ISystem>();
+    private List<ISystem> _extrapolatedSystems = new List<ISystem>();
+
+    public void UpdateExtrapolatedSystems()
+    {
+        foreach (var system in _extrapolatedSystems)
+        {
+            system.UpdateSystem();
+        }
+    }
 
     private void FixedUpdate()
     {
@@ -77,6 +91,7 @@ public class ECSManager : MonoBehaviour {
     private void Awake()
     {
         _allSystems = RegisterSystems.GetListOfSystems();
+        _extrapolatedSystems = RegisterSystems.GetListOfExtrapolatedSystems();
         Screen.SetResolution(1024, 768, false);
     }
 
